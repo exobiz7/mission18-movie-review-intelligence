@@ -1,0 +1,481 @@
+{
+  "contract_version": "1.0.0",
+  "document_kind": "Mission18 machine-verifiable API contract",
+  "phase": "G1",
+  "scope": {
+    "backend_owns_persistence": true,
+    "backend_owns_inference": true,
+    "frontend": "streamlit",
+    "backend": "fastapi",
+    "route_prefix": "",
+    "auth": "not_in_course_scope; public write access must be controlled before deployment"
+  },
+  "error_envelope": {
+    "shape": {
+      "error": {
+        "code": "UPPER_SNAKE_CASE",
+        "message": "user-safe localized text",
+        "request_id": "UUID"
+      }
+    },
+    "always_header": "X-Request-ID",
+    "validation_error_code": "VALIDATION_ERROR",
+    "not_found_codes": [
+      "MOVIE_NOT_FOUND",
+      "REVIEW_NOT_FOUND"
+    ],
+    "dependent_failure_codes": [
+      "DATABASE_UNAVAILABLE",
+      "MODEL_UNAVAILABLE"
+    ],
+    "internal_error_code": "INTERNAL_ERROR",
+    "no_sensitive_payload_echo": true
+  },
+  "list_semantics": {
+    "order_by": [
+      "created_at DESC",
+      "id DESC"
+    ],
+    "limit": {
+      "default": 50,
+      "min": 1,
+      "max": 100
+    },
+    "offset": {
+      "default": 0,
+      "min": 0
+    },
+    "recent": {
+      "default": 10,
+      "min": 1,
+      "max": 10
+    },
+    "empty_list": [],
+    "movie_reviews_missing_parent_status": 404,
+    "genre_filter": "case-insensitive exact match",
+    "query_filter": "case-insensitive title substring"
+  },
+  "sentiment": {
+    "classes": [
+      "negative",
+      "positive"
+    ],
+    "positive_threshold": 0.5,
+    "tie_label": "positive",
+    "positive_probability_field": "sentiment_score",
+    "confidence_field": "sentiment_confidence",
+    "avg_field": "average_sentiment_score",
+    "zero_review_mean": null,
+    "confidence_is_not_rating": true,
+    "calibration_not_assumed": true
+  },
+  "timestamps": "ISO-8601 UTC Z",
+  "request_unknown_fields": "forbid",
+  "id_constraints": "path and body IDs are positive integers",
+  "database_changes_on_model_failure": false,
+  "endpoints": [
+    {
+      "id": "SYS-01",
+      "method": "GET",
+      "path": "/health",
+      "request_schema": null,
+      "response_schema": "HealthResponse",
+      "success_status": 200,
+      "errors": [
+        500
+      ],
+      "effect": "none"
+    },
+    {
+      "id": "SYS-02",
+      "method": "GET",
+      "path": "/readiness",
+      "request_schema": null,
+      "response_schema": "ReadinessResponse",
+      "success_status": 200,
+      "errors": [
+        503
+      ],
+      "effect": "none"
+    },
+    {
+      "id": "MOV-01",
+      "method": "POST",
+      "path": "/movies",
+      "request_schema": "MovieCreate",
+      "response_schema": "MovieResponse",
+      "success_status": 201,
+      "errors": [
+        422,
+        503
+      ],
+      "effect": "insert_movie"
+    },
+    {
+      "id": "MOV-02",
+      "method": "GET",
+      "path": "/movies",
+      "request_schema": null,
+      "response_schema": "MovieResponse[]",
+      "success_status": 200,
+      "errors": [
+        422,
+        503
+      ],
+      "effect": "none"
+    },
+    {
+      "id": "MOV-03",
+      "method": "GET",
+      "path": "/movies/{movie_id}",
+      "request_schema": null,
+      "response_schema": "MovieResponse",
+      "success_status": 200,
+      "errors": [
+        404,
+        422,
+        503
+      ],
+      "effect": "none"
+    },
+    {
+      "id": "MOV-04",
+      "method": "DELETE",
+      "path": "/movies/{movie_id}",
+      "request_schema": null,
+      "response_schema": null,
+      "success_status": 204,
+      "errors": [
+        404,
+        422,
+        503
+      ],
+      "effect": "delete_movie_cascade_reviews"
+    },
+    {
+      "id": "REV-01",
+      "method": "POST",
+      "path": "/reviews",
+      "request_schema": "ReviewCreate",
+      "response_schema": "ReviewResponse",
+      "success_status": 201,
+      "errors": [
+        404,
+        422,
+        503
+      ],
+      "effect": "infer_and_insert_review_atomic"
+    },
+    {
+      "id": "REV-02",
+      "method": "GET",
+      "path": "/reviews",
+      "request_schema": null,
+      "response_schema": "ReviewResponse[]",
+      "success_status": 200,
+      "errors": [
+        422,
+        503
+      ],
+      "effect": "none"
+    },
+    {
+      "id": "REV-03",
+      "method": "GET",
+      "path": "/reviews/recent",
+      "request_schema": null,
+      "response_schema": "ReviewResponse[]",
+      "success_status": 200,
+      "errors": [
+        422,
+        503
+      ],
+      "effect": "none"
+    },
+    {
+      "id": "REV-04",
+      "method": "GET",
+      "path": "/movies/{movie_id}/reviews",
+      "request_schema": null,
+      "response_schema": "ReviewResponse[]",
+      "success_status": 200,
+      "errors": [
+        404,
+        422,
+        503
+      ],
+      "effect": "none"
+    },
+    {
+      "id": "REV-05",
+      "method": "GET",
+      "path": "/reviews/{review_id}",
+      "request_schema": null,
+      "response_schema": "ReviewResponse",
+      "success_status": 200,
+      "errors": [
+        404,
+        422,
+        503
+      ],
+      "effect": "none"
+    },
+    {
+      "id": "REV-06",
+      "method": "DELETE",
+      "path": "/reviews/{review_id}",
+      "request_schema": null,
+      "response_schema": null,
+      "success_status": 204,
+      "errors": [
+        404,
+        422,
+        503
+      ],
+      "effect": "delete_review"
+    },
+    {
+      "id": "ANA-01",
+      "method": "GET",
+      "path": "/movies/{movie_id}/sentiment-score",
+      "request_schema": null,
+      "response_schema": "MovieSentimentSummary",
+      "success_status": 200,
+      "errors": [
+        404,
+        422,
+        503
+      ],
+      "effect": "none"
+    }
+  ],
+  "schemas": {
+    "MovieCreate": {
+      "title": {
+        "type": "string",
+        "required": true,
+        "min_length": 1,
+        "max_length": 200,
+        "strip": true
+      },
+      "release_date": {
+        "type": "date",
+        "required": true,
+        "format": "YYYY-MM-DD",
+        "future_allowed": true
+      },
+      "director": {
+        "type": "string",
+        "required": true,
+        "min_length": 1,
+        "max_length": 120,
+        "strip": true
+      },
+      "genre": {
+        "type": "string",
+        "required": true,
+        "min_length": 1,
+        "max_length": 80,
+        "strip": true
+      },
+      "poster_url": {
+        "type": "string",
+        "required": true,
+        "format": "http-or-https-url",
+        "max_length": 2048
+      }
+    },
+    "MovieResponse": {
+      "id": {
+        "type": "integer",
+        "required": true,
+        "min": 1
+      },
+      "title": {
+        "type": "string",
+        "required": true
+      },
+      "release_date": {
+        "type": "date",
+        "required": true
+      },
+      "director": {
+        "type": "string",
+        "required": true
+      },
+      "genre": {
+        "type": "string",
+        "required": true
+      },
+      "poster_url": {
+        "type": "string",
+        "required": true
+      },
+      "created_at": {
+        "type": "datetime",
+        "required": true,
+        "timezone": "UTC"
+      },
+      "review_count": {
+        "type": "integer",
+        "required": true,
+        "min": 0
+      },
+      "average_sentiment_score": {
+        "type": "number|null",
+        "required": true,
+        "min": 0,
+        "max": 1,
+        "zero_reviews": null
+      }
+    },
+    "ReviewCreate": {
+      "movie_id": {
+        "type": "integer",
+        "required": true,
+        "min": 1
+      },
+      "author": {
+        "type": "string",
+        "required": true,
+        "min_length": 1,
+        "max_length": 80,
+        "strip": true
+      },
+      "content": {
+        "type": "string",
+        "required": true,
+        "min_length": 1,
+        "max_length": 2000,
+        "strip": true
+      }
+    },
+    "ReviewResponse": {
+      "id": {
+        "type": "integer",
+        "required": true,
+        "min": 1
+      },
+      "movie_id": {
+        "type": "integer",
+        "required": true,
+        "min": 1
+      },
+      "author": {
+        "type": "string",
+        "required": true
+      },
+      "content": {
+        "type": "string",
+        "required": true
+      },
+      "sentiment_label": {
+        "type": "enum",
+        "required": true,
+        "values": [
+          "positive",
+          "negative"
+        ]
+      },
+      "sentiment_score": {
+        "type": "number",
+        "required": true,
+        "min": 0,
+        "max": 1,
+        "semantic": "P(positive|text,model)"
+      },
+      "sentiment_confidence": {
+        "type": "number",
+        "required": true,
+        "min": 0.5,
+        "max": 1,
+        "semantic": "max(p_positive,1-p_positive)"
+      },
+      "model_name": {
+        "type": "string",
+        "required": true
+      },
+      "model_revision": {
+        "type": "string",
+        "required": true
+      },
+      "inference_latency_ms": {
+        "type": "integer",
+        "required": true,
+        "min": 0
+      },
+      "inferred_at": {
+        "type": "datetime",
+        "required": true,
+        "timezone": "UTC"
+      },
+      "created_at": {
+        "type": "datetime",
+        "required": true,
+        "timezone": "UTC"
+      }
+    },
+    "MovieSentimentSummary": {
+      "movie_id": {
+        "type": "integer",
+        "required": true,
+        "min": 1
+      },
+      "review_count": {
+        "type": "integer",
+        "required": true,
+        "min": 0
+      },
+      "positive_count": {
+        "type": "integer",
+        "required": true,
+        "min": 0
+      },
+      "negative_count": {
+        "type": "integer",
+        "required": true,
+        "min": 0
+      },
+      "average_sentiment_score": {
+        "type": "number|null",
+        "required": true,
+        "min": 0,
+        "max": 1,
+        "zero_reviews": null
+      }
+    },
+    "HealthResponse": {
+      "status": {
+        "type": "literal",
+        "required": true,
+        "value": "ok"
+      }
+    },
+    "ReadinessResponse": {
+      "status": {
+        "type": "literal",
+        "required": true,
+        "value": "ready"
+      },
+      "database": {
+        "type": "string",
+        "required": true
+      },
+      "model": {
+        "type": "string",
+        "required": true
+      }
+    },
+    "ErrorEnvelope": {
+      "error": {
+        "type": "object",
+        "required": true,
+        "fields": [
+          "code",
+          "message",
+          "request_id"
+        ]
+      }
+    }
+  }
+}

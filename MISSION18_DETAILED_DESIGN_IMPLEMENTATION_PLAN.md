@@ -1,10 +1,10 @@
 # MISSION 18 — 상세설계 및 구현개발 실행계획서
-> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.2 — Phase 0 Gate Verified**
+> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.3 — G1 Contract Gate Verified**
 
 | 항목 | 내용 |
 |---|---|
 | 작성 기준일 | 2026-10-09 (Asia/Seoul) |
-| 문서 상태 | **PHASE 0 / G0 PASS — isolated bootstrap complete**. Python 3.12.14 venv, local Git commit, source reuse audit verified; API/AI/UI 구현 미착수 |
+| 문서 상태 | **G0/G1 LOCAL PASS — design and dependency contract locked**. Python 3.12.14, 13-route / 8-schema API contract, ERD, sentiment semantics, uv.lock, contract tests; API/AI/UI 구현 미착수 |
 | 대상 미션 | Codeit AI Engineering Sprint Mission 18 |
 | 지정 프로젝트 루트 | `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review` |
 | 제출 경로 | `미션18/{팀명}_{이름}/` (실제 값 미제공: 제출 패키징 시 확정) |
@@ -1435,3 +1435,39 @@ Tests/CI → Cloud Deployment → Evidence/PDF → Submission.
 | G2–G8 | **NOT TESTED** | FastAPI/Streamlit/감성분석/배포/제출 미구현 |
 
 **다음 작업 단위:** Phase 1 — API/ERD/모델 출력 의미 계약 확정, Python 3.12-compatible 의존성 잠금, Movie CRUD의 테스트 선행 명세. 실측 이전 성공 여부를 주장하지 않는다.
+
+
+---
+
+## 23. Phase 1 / G1 실제 실행 및 승인 기록 (v1.3, 2026-10-09)
+
+**G1 local result: PASS.** This updates the historical G1 NOT TESTED state in section 22; Phase 2+ is still NOT TESTED.
+
+### 23.1 Source of truth and deliverables
+
+- `contracts/api_contract.json`: 13 path/method operations, 8 machine-readable DTO definitions, HTTP success/errors/side effects.
+- `docs/API_CONTRACT.md`: request/response schemas, query limits, errors, review transaction, OpenAPI acceptance.
+- `docs/ERD.md`: SQLAlchemy/Alembic design, 1:N movie/review, FK ON DELETE CASCADE, SQL aggregations, UTC/SQLite differences.
+- `docs/SENTIMENT_CONTRACT.md`: binary mapping, positive probability vs class confidence, invalid logits failure, explicit test fake.
+- `docs/TEST_PLAN.md`: requirement-to-test matrix C0 through D6; model/HTTP/E2E postponed to later gates.
+- `docs/ADR/0002-contract-first-g1.md`: chosen constraints and tradeoffs.
+- `pyproject.toml`, `uv.lock`, `.env.example`: Python 3.12-only, production/core dependencies separated from postponed large ML stack.
+- `scripts/check_contracts.py`, `tests/test_contract_spec.py`: static contract validations.
+- `.github/workflows/ci.yml`: minimal SHA-pinned CI workflow authored; **remote GitHub execution not tested**.
+- `docs/G1_ACCEPTANCE.md`: detailed local evidence and next-gate handoff.
+
+### 23.2 Actually observed host verification
+
+- uv 0.12.5, `uv lock --check` PASS; resolver locked 62 dependencies.
+- `uv sync --locked --group dev` installed 58 packages solely into M18 `.venv`.
+- Imported versions: FastAPI 0.143.0, SQLAlchemy 2.1.4, Streamlit 1.65.0 (smoke PASS).
+- `scripts/check_contracts.py` PASS (13 paths, 8 schemas).
+- `pytest -q tests/test_contract_spec.py`: 7 tests, 3 subtests PASS.
+- `ruff check scripts tests`: PASS after correcting only M18-local import ordering.
+- No M13/M17 source or running process modified; no GitHub remote/push in this gate.
+
+### 23.3 Approval boundary and next task
+
+**G1 PASS means design and local contract checks only.** No FastAPI route, database migration, real ML inference, Streamlit E2E, actual GitHub Actions execution, cloud URL, or submission screenshot has passed at G1. Do not conflate contract algebra tests with model quality measurement.
+
+**Next phase: G2 — implement SQLAlchemy/Alembic 0001 migration and first Movie CRUD vertical slice, prove actual HTTP and minimal Streamlit client using dedicated test DB.** Preserve the locked API contract and document any changes through ADR.

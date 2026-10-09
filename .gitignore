@@ -27,6 +27,7 @@ build/
 *.key
 
 # Database and local user data
+.local/
 data/
 *.db
 *.sqlite
