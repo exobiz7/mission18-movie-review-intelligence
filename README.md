@@ -34,11 +34,12 @@ To inspect the existing interpreter:
 cd "/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review"
 .venv/bin/python --version
 git status --short --branch
+.venv/bin/python scripts/preflight.py  # local Phase 0 environment check
 ```
 
 ## Implementation boundary
 
-See the separate full design baseline `MISSION18_DETAILED_DESIGN_IMPLEMENTATION_PLAN_v1_1_20261009.md` delivered in the ChatGPT conversation. A complete local copy of that baseline has **not** been placed in this repository yet; the next design-lock step should import/synchronize it, then author `API_CONTRACT.md`, `ERD.md` and `TEST_PLAN.md`.
+**Canonical design (v1.2):** `MISSION18_DETAILED_DESIGN_IMPLEMENTATION_PLAN.md` is now present at the repository root and synchronized with the observed Phase 0/G0 state. Next author `docs/API_CONTRACT.md`, `docs/ERD.md` and `docs/TEST_PLAN.md`.
 
 **Do not copy M13 model checkpoints or M17 direct-storage code into the M18 frontend.** The backend owns DB and inference; reuse patterns after license/contract verification.
 

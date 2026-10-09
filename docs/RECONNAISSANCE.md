@@ -23,7 +23,7 @@
 | GitHub remote | No M18 remote configured; no new remote created | PASS |
 | Application/test/deployment | Not present / not executed | NOT TESTED |
 
-The three provided guide files remain the source baseline; the design v1.1 is a separate conversation download and has **not** been imported into the local root.
+The three provided guide files remain the source baseline. The original conversation design v1.1 has been integrated into the root `MISSION18_DETAILED_DESIGN_IMPLEMENTATION_PLAN.md` as canonical v1.2 (Phase 0/G0 evidence revision).
 
 ## 2. Source-level M13 analysis (read only)
 
@@ -75,11 +75,11 @@ No network package downloads, dependency installations, service starts, process 
 | Actual app/APIs/model tests | NOT TESTED — future phases |
 | Cloud/SaaS deployment | NOT TESTED — future phases |
 
-**G0 verdict: PASS for inspection/isolation/bootstrap.** This is not a functional acceptance of the application.
+**G0 verdict: PASS for inspection/isolation/bootstrap.** The reproducible read-only `scripts/preflight.py` completed **12/12 checks PASS** on Python 3.12.14; 8000/8518 had no local listener at that snapshot. This is not a functional acceptance of the application.
 
 ## 6. Phase 1 next tasks
 
-1. Import the full current design baseline to this project (avoid unverified duplicate versions).
+1. Read and version-control the root canonical v1.2 design baseline; avoid unverified duplicate versions.
 2. Freeze explicit OpenAPI endpoint/schema/HTTP errors in `docs/API_CONTRACT.md`.
 3. Freeze `Movie`/`Review` ERD, FK/cascade, timestamps, and positive probability semantics.
 4. Choose Python 3.12-compatible dependencies and record a lockfile; **do not depend on global pip**.
