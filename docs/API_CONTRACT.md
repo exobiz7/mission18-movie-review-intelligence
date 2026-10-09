@@ -1,6 +1,6 @@
 # Mission 18 — API Contract v1.0 (G1)
 
-> Status: **Design locked for Phase 2 implementation**; no FastAPI routes implemented yet. Date: 2026-10-09.
+> Status: **Design locked in G1; all 13 routes implemented and locally verified in G3 (2026-10-10)**. Original contract version 1.0 remains unchanged; see G3 acceptance report.
 >
 > **Machine-readable single source of truth for endpoint identities, schemas and status codes:** [`../contracts/api_contract.json`](../contracts/api_contract.json). This document explains behavioral invariants; `scripts/check_contracts.py` enforces consistency. Changes require an ADR and contract-version update.
 

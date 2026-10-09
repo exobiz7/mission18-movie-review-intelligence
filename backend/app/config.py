@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     api_base_url: str = "http://127.0.0.1:8000"
     cors_allow_origins: str = "http://127.0.0.1:8518"
     model_backend: str = "unconfigured"
+    model_path: str = ".local/models/koelectra-small-v3-nsmc"
+    model_id: str = "daekeun-ml/koelectra-small-v3-nsmc"
+    model_revision: str = "d1c0233fc013ae8bd879d7b61f2bec69aa3af4c9"
+    max_tokens: int = Field(default=192, ge=8, le=512)
 
     @property
     def allowed_origins(self) -> list[str]:

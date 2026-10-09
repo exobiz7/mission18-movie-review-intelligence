@@ -1,6 +1,6 @@
 # Mission 18 — Test Plan and Acceptance Matrix (G1 v1.0)
 
-**Plan only:** No API, DB, Streamlit UI, or real ML tests are claimed as PASS in G1. Source of truth: course mission, three premission guides, `contracts/api_contract.json`, `docs/API_CONTRACT.md`, `docs/ERD.md`, `docs/SENTIMENT_CONTRACT.md`.
+**Historical G1 plan; updated verification status:** G2/G3 implemented with local tests and real-model E2E by 2026-10-10. **46 pytest PASS + 11 G3 live checks PASS**; G4/G5/G6/G7/G8 not completed. Source of truth: course mission, three premission guides, `contracts/api_contract.json`, `docs/API_CONTRACT.md`, `docs/ERD.md`, `docs/SENTIMENT_CONTRACT.md`.
 
 ## 1. Evidence tiers
 

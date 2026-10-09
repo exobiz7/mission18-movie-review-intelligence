@@ -1,6 +1,6 @@
 # Mission 18 — Sentiment Adapter Contract / Model Selection Gate v1.0
 
-**Status:** interface locked for tests and future implementation; no actual model selected, downloaded or benchmarked in G1.
+**Status:** Historical G1 interface contract; **G3 real pinned KoELECTRA small NSMC model selected, downloaded, SHA verified and live-tested (2026-10-10)**. Holdout classification metrics, calibration and comparative benchmark remain G5 untested. See `MODEL_CARD_AND_LICENSES.md`.
 
 ## 1. Why this is a separate contract
 
@@ -57,7 +57,9 @@ Before enabling the adapter:
 
 M13 code uses `{0:"부정",1:"중립",2:"긍정"}` and product-domain 3-class checkpoints. These are **not** directly interchangeable with M18 binary movie-review outputs. Reuse macro-F1 and bootstrap evaluation methodology only until independent movie-domain quality/licensing tests justify more.
 
-## 4. Model candidates and measured selection (G3/G5, not decided here)
+## 4. Original G1 model candidates and future G5 benchmark plan (preserved history)
+
+G3 selected `daekeun-ml/koelectra-small-v3-nsmc` at SHA-pinned commit `d1c0233fc013ae8bd879d7b61f2bec69aa3af4c9`. Real Korean class-direction examples and actual P(positive) values are recorded in `MODEL_CARD_AND_LICENSES.md`. The alternatives below remain for the later G5 comparison; they do **not** override G3's selected production adapter.
 
 Research candidate tiers:
 - Baseline: TF-IDF + Logistic Regression trained on a legally usable labeled Korean movie-review dataset; **must train and evaluate**, not a keyword heuristic.
@@ -80,4 +82,4 @@ Dependencies `torch`, `transformers`, `onnxruntime` and optional `scikit-learn` 
 
 Reject probability `-0.01`, `1.01`, `NaN`, `Inf`, empty revision, negative latency, and mapping unknown; assert 503 + zero DB writes when an adapter raises.
 
-**Exit G1:** mathematically precise and testable adapter contract is recorded. **Actual inference and model performance remain NOT TESTED.**
+**Historical G1 exit:** mathematically precise, testable adapter contract locked. **Updated G3:** real-model functional inference PASS, representative held-out F1/accuracy/calibration and competing-model benchmark **NOT TESTED**.

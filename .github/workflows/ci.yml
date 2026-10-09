@@ -1,4 +1,4 @@
-name: Mission18 G1 G2 Contracts and Movie Slice
+name: Mission18 G1 G2 G3 Real Review Service
 
 on:
   push:
@@ -42,8 +42,36 @@ jobs:
       - name: Ruff format
         run: uv run --locked --group dev ruff format --check backend frontend scripts tests
 
-      - name: G1 + G2 integration tests
+      - name: G1 + G2 + G3 integration tests
         run: uv run --locked --group dev pytest -q
 
       - name: G2 real Uvicorn and Streamlit smoke
         run: uv run --locked --group dev python scripts/smoke_g2.py
+
+  pinned-real-model-smoke:
+    needs: contract-and-lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout source (pinned)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Setup uv (pinned)
+        uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        with:
+          version: "0.12.5"
+
+      - name: Python 3.12
+        run: uv python install 3.12
+
+      - name: Install locked ML optional extra
+        run: uv sync --locked --extra ml --group dev
+
+      - name: Obtain and SHA-check immutable sentiment weights
+        run: uv run --locked --extra ml --group dev python scripts/download_model.py
+
+      - name: Real Uvicorn Streamlit SQLite and model E2E
+        env:
+          HF_HUB_OFFLINE: "1"
+          TOKENIZERS_PARALLELISM: "false"
+        run: uv run --locked --extra ml --group dev python scripts/smoke_g3.py

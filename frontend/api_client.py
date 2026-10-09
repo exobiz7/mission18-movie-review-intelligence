@@ -69,3 +69,25 @@ class MovieApiClient:
             return self._request("GET", "/health").get("status") == "ok"
         except ApiClientError:
             return False
+
+    def create_review(self, data: dict) -> dict:
+        return self._request("POST", "/reviews", json=data)
+
+    def reviews(self, *, movie_id: int | None = None, limit: int = 50) -> list[dict]:
+        path = f"/movies/{movie_id}/reviews" if movie_id is not None else "/reviews"
+        return self._request("GET", path, params={"limit": limit, "offset": 0})
+
+    def recent_reviews(self, *, limit: int = 10) -> list[dict]:
+        return self._request("GET", "/reviews/recent", params={"limit": limit})
+
+    def sentiment_summary(self, movie_id: int) -> dict:
+        return self._request("GET", f"/movies/{movie_id}/sentiment-score")
+
+    def delete_review(self, review_id: int) -> None:
+        self._request("DELETE", f"/reviews/{review_id}")
+
+    def readiness(self) -> bool:
+        try:
+            return self._request("GET", "/readiness").get("status") == "ready"
+        except ApiClientError:
+            return False

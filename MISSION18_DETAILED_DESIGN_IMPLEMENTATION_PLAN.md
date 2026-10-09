@@ -1,18 +1,18 @@
 # MISSION 18 — 상세설계 및 구현개발 실행계획서
-> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.4 — G2 Real Vertical Slice Verified**
+> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.5 — G3 Real AI Sentiment End-to-End Verified**
 
 | 항목 | 내용 |
 |---|---|
-| 작성 기준일 | 2026-10-09 (Asia/Seoul) |
-| 문서 상태 | **G0/G1/G2 LOCAL PASS — first movie vertical slice implemented and verified**. FastAPI Movie CRUD, Alembic 0001, SQLite persistence, Streamlit HTTP client, API/real-HTTP/UI tests. Reviews and real sentiment model deferred to G3 |
+| 작성 기준일 | 2026-10-10 (Asia/Seoul) |
+| 문서 상태 | **G0/G1/G2/G3 LOCAL PASS — actual pinned Korean movie sentiment service implemented and verified**. All 13 FastAPI APIs, Alembic/SQLite, review CRUD+positive score+recent10, Streamlit form→real model→DB, 46 pytest+11 live G3 checks PASS. G4–G8 pending |
 | 대상 미션 | Codeit AI Engineering Sprint Mission 18 |
 | 지정 프로젝트 루트 | `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review` |
 | 제출 경로 | `미션18/{팀명}_{이름}/` (실제 값 미제공: 제출 패키징 시 확정) |
 | 공식 프론트엔드 / 백엔드 | Streamlit / FastAPI |
 | 목표 | 채점 적합성, 포트폴리오 설득력, 실제 재현성, 장기 재사용 가능한 리뷰/VOC AI 자산 |
-| 본 문서의 범위 | **상세설계 및 진행현황 기준본**. G2 영화 CRUD 구현과 로컬 테스트 근거를 포함하되, G3 리뷰·AI 및 클라우드 배포/최종 제출은 아직 미실행 |
+| 본 문서의 범위 | **상세설계 및 진행현황 기준본**. G3 리뷰 CRUD·실제 ML 추론까지의 구현과 테스트 근거 포함. G4 UI 완성, G5 성능/정확도 비교, G6 보안 강화, G7 클라우드 배포, G8 최종 보고서/제출은 미완료 |
 | 기준 우선순위 | ① 사용자 제공 미션 원문 ② 사용자 제공 사전 문서 3종 ③ 명시적으로 검증한 공식 외부 자료 ④ 이 문서에서 새로 제안한 설계 |
-| 기술 리스크 | 지정 루트 FULL_HOST 접근 확인. 로컬 Git 및 Python 3.12.14 격리. Movie API/Streamlit 실제 동작은 검증됨. 실제 감성분석 모델, 공개배포, 보고서 캡처 미검증 |
+| 기술 리스크 | 지정 루트 FULL_HOST 접근 확인. 로컬 Git 및 Python 3.12.14 격리. Movie/Review API와 실제 고정 KoELECTRA 모델의 로컬 E2E 검증 완료. 대표 샘플의 정확도/교정, 클라우드 배포, 제출 증거는 아직 미검증 |
 | GitHub 현황 | 연결된 GitHub `exobiz7` 확인. M18 전용 remote 없음; **로컬 Git 커밋 `12483a3` 생성**, GitHub에는 생성/푸시하지 않음 |
 | 사용자 승인이 필요한 사실 | 제출용 정확한 `{팀명}_{이름}`, 실제 배포 서비스/계정·지출 승인, 기존 로컬 저장소와의 충돌 여부 |
 
@@ -1506,3 +1506,45 @@ Warnings are reported transparently in the G2 acceptance record. Synthetic fixtu
 ### 24.3 Next implementation unit
 
 **G3: Review CRUD, real Korean movie review sentiment model selection and pinned immutable revision, model load-once, atomic inference+review insert, movie-level average and recent 10, robust errors and actual runtime tests.** Preserve G1 manifest invariants. GitHub workflow is authored, but actual remote CI remains NOT TESTED until an M18 GitHub remote is established.
+
+
+---
+
+## 25. Phase 3 / G3 실모델 기반 리뷰 CRUD 및 검증 기록 (v1.5, 2026-10-10)
+
+**G3 LOCAL PASS.** This section supersedes the historical G3 NOT TESTED status above. Sources: `docs/G3_ACCEPTANCE.md`, `docs/MODEL_CARD_AND_LICENSES.md`, `docs/ADR/0004-pinned-real-model-and-review-transaction.md`.
+
+### 25.1 실제 구현한 정본 모듈과 계약
+
+- **Model:** `daekeun-ml/koelectra-small-v3-nsmc`; immutable commit `d1c0233fc013ae8bd879d7b61f2bec69aa3af4c9`, `model.safetensors` SHA-256 `012a5926dcfe2d0b1caf17ef79963097838f693ce12fad2a27d8802bd3fdec28` verified; local assets kept outside Git.
+- **Inference:** `backend/app/sentiment.py` checks SHA, binary config, real Korean positive/negative sanity direction; model loads once per FastAPI lifespan and cannot perform remote-code execution; `/readiness` 200 only with DB and genuine model ready.
+- **Services:** `backend/app/review_services.py` implements `POST/GET/DELETE /reviews`, `GET /reviews/recent`, `GET /movies/{movie_id}/reviews`, `GET /movies/{movie_id}/sentiment-score`, atomic model+review save and SQL mean/count; 0 reviews → null.
+- **Invariants:** `sentiment_score = P(positive)` and `sentiment_confidence = max(p,1-p)`. Model failures, nonfinite numbers, unknown movie, FK races and commit failure cannot insert a partially inferred review. Model/version metadata stored per review.
+- **UI:** `frontend/app.py`, `frontend/api_client.py` expose movie/review forms, score distinction, per-movie summary and recent 10 through actual HTTP only. Source remains independent from M13/M17.
+- **Tests:** `tests/test_reviews_api.py` with explicit fake adapter DI for deterministic API failure tests; `scripts/smoke_g3.py` runs **actual pinned model** on isolated temporary DB with real Uvicorn + Streamlit/AppTest.
+
+### 25.2 검증 결과 (사실과 미실측 구분)
+
+| 항목 | 실측/검증 | 판정 |
+|---|---|---|
+| Download and model assets | pinned revision, SHA, 2-class model metadata | PASS |
+| Numeric label mapping | Korean known-positive 0.99907446, known-negative 0.00067433 | PASS sanity only |
+| Combined pytest | 46 tests passed, 3 subtests, 1 Starlette deprecation warning | PASS |
+| Real G3 E2E | 11/11 checkpoints PASS, real model ready 200 | PASS |
+| Submitted G3 fixture review records | three movies × 12 actual model-reviewed fixture posts (36), plus 1 Streamlit form review | PASS |
+| Movie positive aggregates | 12/movie, each 6 positive/6 negative (script fixture); recent10 | PASS |
+| Live restart and deletion | model reload+DB persistence, DELETE review 204, movie cascade | PASS |
+| Actual independent accuracy/F1/calibration comparison | not measured | NOT TESTED (G5) |
+| Public deployment, auth, final screenshots/PDF | not executed | NOT TESTED (G6–G8) |
+
+The 36 fixture reviews are **synthetic functional evidence**, not an independent holdout ML evaluation set. Single positive/negative sample inference timings (~4ms locally) cannot be represented as a statistically reliable latency benchmark.
+
+### 25.3 라이선스와 보존 정책
+
+Model repository metadata shows `MIT`; the separately published NSMC dataset lists `CC-BY-2.0`. Do not conflate weight licensing with training-data redistribution rights. Preserve attribution and pin/hash policy in `docs/MODEL_CARD_AND_LICENSES.md`.
+
+Environment: `uv.lock` resolved 96 packages including optional `ml` group; local implementation used PyTorch 2.14.1 and transformers 4.57.6 on Python 3.12.14. No global packages, existing M13/M17 source or services modified. Model weights and temporary databases remain inside ignored M18 `.local/`; no GitHub remote/push performed.
+
+### 25.4 다음 작업 단위
+
+**G4 — polished, accessible, responsive Streamlit experience and evidence-friendly 3-movie/≥10-review-per-movie UI**; next **G5 — real holdout benchmark, size/cold-start/latency/memory/optional ONNX comparison**; finally G6 security, G7 persistent public cloud, G8 final PDF + captures + submission archive. GitHub Actions was authored but remote execution is not claimed without a connected repository.

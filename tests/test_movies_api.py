@@ -173,8 +173,9 @@ def test_direct_orphan_review_insert_rejected(
         session.rollback()
 
 
-def test_generated_openapi_has_no_fake_review_routes(client: TestClient):
+def test_generated_openapi_contains_real_g3_review_routes(client: TestClient):
     paths = client.get("/openapi.json").json()["paths"]
-    assert "/reviews" not in paths
-    assert "/movies/{movie_id}/sentiment-score" not in paths
+    assert "/reviews" in paths
+    assert "/reviews/recent" in paths
+    assert "/movies/{movie_id}/sentiment-score" in paths
     assert {"/health", "/readiness", "/movies", "/movies/{movie_id}"} <= set(paths)
