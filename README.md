@@ -1,6 +1,6 @@
 # Mission 18 — Movie Review Sentiment Intelligence
 
-**Status (2026-10-10): G0/G1/G2/G3 local verification PASS. Real Korean movie sentiment inference, Review CRUD, 3 movies x 12 reviews, averages and recent 10 verified through HTTP and Streamlit. G4–G8 pending.**
+**Status (2026-10-10): G0–G4 LOCAL PASS. Streamlit 4-tab UX, offline/empty/error handling, real Chrome desktop/mobile screenshots, and a repeatable 3-movie ×12-review real-model demo are complete. G5–G8 pending.**
 
 Canonical local root: `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review`.
 
@@ -10,10 +10,10 @@ Implement the official **Streamlit + FastAPI** movie/review/sentiment applicatio
 
 ## Project structure
 
-- `frontend/` — HTTP-only Streamlit movie/review CRUD, auto-sentiment, per-movie score, recent reviews
+- `frontend/` — G4 responsive cinema gallery and HTTP-only movie/review UI; CSS + safe UI formatting helpers
 - `backend/app/` — FastAPI with 13 actual routes, isolated SQLAlchemy transactions, verified real sentiment adapter
-- `scripts/` — G0/G1 checks, G2 smoke, G3 real-model download and HTTP/UI/inference smoke
-- `tests/` — 46 passing G1/G2/G3 contract/SQLite/FastAPI/model fake-injection and HTTP client tests
+- `scripts/` — G0/G1 checks, G2/G3 smokes, G4 local-only idempotent seed and real Chrome capture
+- `tests/` — 59 passing tests including G4 pure UI, escaped HTML, offline state, isolated-seed security
 - `docs/` — architecture/contracts/decisions/evidence
 - `docs/RECONNAISSANCE.md` — **real host observations** and Phase 0 gate
 - `docs/ADR/0001-isolated-bootstrap.md` — bootstrap decision record
@@ -30,7 +30,7 @@ The three original premission guides and previous host recon update remain **unm
 - Dedicated local environment: `.venv` with **Python 3.12.14**, created using existing `uv` offline
 - Local Git repository: `main`; **no GitHub remote is configured**
 - Preferred ports (check availability before running): backend `8000`, Streamlit `8518`
-- Core+dev+optional ML dependencies installed in M18-only `.venv` (96-package uv.lock); local pinned safetensors model and disposable DBs ignored by Git
+- Core+dev+optional ML dependencies installed in M18-only `.venv` (99-package uv.lock, including dev-only Playwright); model and persistent demo DB ignored by Git
 - FastAPI 0.143.0, SQLAlchemy 2.1.4, Streamlit 1.65.0, PyTorch 2.14.1 and transformers 4.57.6 verified; real Uvicorn + Streamlit + model E2E PASS
 
 To inspect the existing interpreter:
@@ -44,13 +44,13 @@ git status --short --branch
 
 ## Implementation boundary
 
-**Canonical design:** `MISSION18_DETAILED_DESIGN_IMPLEMENTATION_PLAN.md` (G3 revision). **All 13 contracted routes implemented**; see `docs/G3_ACCEPTANCE.md`, `docs/MODEL_CARD_AND_LICENSES.md` and `docs/ADR/0004-pinned-real-model-and-review-transaction.md`.
+**Canonical design:** `MISSION18_DETAILED_DESIGN_IMPLEMENTATION_PLAN.md` (v1.6/G4 revision). All 13 backend API routes remain implemented. G4 UI and real-browser evidence: `docs/G4_ACCEPTANCE.md`, `docs/evidence/g4_manifest.json`.
 
 **Do not copy M13 model checkpoints or M17 direct-storage code into the M18 frontend.** The backend owns DB and inference; reuse patterns after license/contract verification.
 
 ## Next gate
 
-**Next: Phase 4/G4** — refine Streamlit UX, accessibility, responsive error states and reproducible visual evidence. Follow with G5 benchmark and G6–G8 deployment/report. **Cloud deployment and model holdout accuracy remain NOT TESTED**.
+**Next: Phase 5/G5** — reproducible held-out model evaluation (macro-F1, precision, recall, calibration), CPU latency/memory/cold-start, and ONNX/INT8 optimization feasibility. G6–G8 hardening/deploy/report still pending.
 
 ## G1 local checks
 
@@ -117,3 +117,20 @@ API_BASE_URL=http://127.0.0.1:8000 .venv/bin/streamlit run frontend/app.py --ser
 Open `http://127.0.0.1:8518` (UI) and `http://127.0.0.1:8000/docs` (OpenAPI). The standalone G3 smoke uses only its **own isolated temporary DB and random available ports** and stops the processes it starts; it never changes a pre-existing development DB.
 
 **Security:** Local demo writes are unauthenticated. Do not expose the backend publicly until G6/G7 mutation controls are implemented. The model's sanity probes are not a substitute for G5 held-out accuracy, calibration, benchmark and deployment tuning.
+
+
+## G4 responsive demo and actual browser evidence
+
+G4 local status **PASS**: `docs/G4_ACCEPTANCE.md` and `docs/evidence/g4_manifest.json`. The UI has four focused tabs (cinema gallery, per-film AI review, recent 10, movie management), responsive sidebar, explicit empty/offline/model-disabled states, and protected deletion controls.
+
+The durable, synthetic demonstration DB is **not in Git**: `.local/demo/movie_reviews.sqlite3`, 3 fictional movies × 12 distinct Korean reviews analyzed with the actual pinned model. The seed is HTTP-only, local-loopback restricted and idempotent (rerun adds 0 movies/0 reviews). The evidence script starts and stops only its own real Uvicorn/Streamlit/Chrome child processes.
+
+```bash
+cd "/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review"
+uv sync --locked --extra ml --group dev
+.venv/bin/python scripts/prepare_g4_demo.py
+```
+
+The actual Chrome screenshots are stored in `docs/evidence/g4_gallery_desktop.png`, `g4_review_desktop.png`, `g4_recent_desktop.png`, `g4_gallery_mobile.png`. Desktop 1440×920 and mobile 390×844 were browser-checked. A complete submission PDF, public cloud demo and independent model holdout benchmark remain future gates.
+
+To explore the persistent demo by hand, start FastAPI using `DATABASE_URL=sqlite:///./.local/demo/movie_reviews.sqlite3` with the real G3 model environment from the commands above, then launch Streamlit on port 8518. **Do not publish unauthenticated movie/review mutations to the internet.**

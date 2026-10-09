@@ -1,4 +1,4 @@
-name: Mission18 G1 G2 G3 Real Review Service
+name: Mission18 G1 G2 G3 G4 Contract API and UI Tests
 
 on:
   push:
@@ -42,7 +42,7 @@ jobs:
       - name: Ruff format
         run: uv run --locked --group dev ruff format --check backend frontend scripts tests
 
-      - name: G1 + G2 + G3 integration tests
+      - name: G1 through G4 integration and offline UI tests
         run: uv run --locked --group dev pytest -q
 
       - name: G2 real Uvicorn and Streamlit smoke

@@ -165,7 +165,7 @@ def main() -> int:
                 test = AppTest.from_file(str(ROOT / "frontend" / "app.py"), default_timeout=20)
                 test.run()
                 assert not test.exception, f"Streamlit AppTest exceptions: {test.exception}"
-                assert any("Movie Review Sentiment Intelligence" in t.value for t in test.title)
+                assert any("영화의 반응을, 데이터로 읽다" in m.value for m in test.markdown)
                 assert any(payload["title"] in h.value for h in test.subheader)
                 assert any(field.label == "영화 제목" for field in test.text_input)
                 fields = {field.label: field for field in test.text_input}

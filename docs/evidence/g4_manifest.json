@@ -1,0 +1,82 @@
+{
+  "gate": "G4",
+  "status": "PASS",
+  "recorded_at_utc": "2026-10-09T16:41:23.175125+00:00",
+  "checks": {
+    "repeat_seed_no_duplicates": true,
+    "three_films_twelve_reviews_each": true,
+    "streamlit_server_running": true,
+    "desktop_gallery_real_chrome": true,
+    "browser_live_title_filter": true,
+    "browser_review_summary_and_form": true,
+    "browser_recent_ten": true,
+    "mobile_real_chrome_capture": true,
+    "backend_still_ready_after_browser": true
+  },
+  "first_seed": {
+    "status": "PASS",
+    "demo_movie_ids": [
+      1,
+      2,
+      3
+    ],
+    "new_movies": 0,
+    "new_reviews": 0,
+    "required_movies": 3,
+    "required_reviews_per_movie": 12,
+    "note": "Synthetic demo fixtures, not independent model accuracy evidence"
+  },
+  "second_seed": {
+    "status": "PASS",
+    "demo_movie_ids": [
+      1,
+      2,
+      3
+    ],
+    "new_movies": 0,
+    "new_reviews": 0,
+    "required_movies": 3,
+    "required_reviews_per_movie": 12,
+    "note": "Synthetic demo fixtures, not independent model accuracy evidence"
+  },
+  "demo_db": ".local/demo/movie_reviews.sqlite3",
+  "counts": [
+    12,
+    12,
+    12
+  ],
+  "model_revision": "d1c0233fc013ae8bd879d7b61f2bec69aa3af4c9",
+  "screenshots": [
+    {
+      "path": "docs/evidence/g4_gallery_desktop.png",
+      "width": 1440,
+      "height": 920,
+      "bytes": 223416,
+      "sha256": "a9caa25d4a5c97cd7592c04234d02f154f0ab68b4f25eb50ece6a4daf39d2ed3"
+    },
+    {
+      "path": "docs/evidence/g4_review_desktop.png",
+      "width": 1440,
+      "height": 920,
+      "bytes": 155790,
+      "sha256": "0053f8fb3a6686fcc71723e6c234bed633227e7e48d8d79728f75c61517c429b"
+    },
+    {
+      "path": "docs/evidence/g4_recent_desktop.png",
+      "width": 1440,
+      "height": 920,
+      "bytes": 168372,
+      "sha256": "08ac273f79015b6e8c3fedc90a90925666385f4e347ba1d5402198fc14f7f7ee"
+    },
+    {
+      "path": "docs/evidence/g4_gallery_mobile.png",
+      "width": 390,
+      "height": 844,
+      "bytes": 70039,
+      "sha256": "be3fc167b90e90e49532dd9a0ca2091510376174490d77391913d7fc6039d544"
+    }
+  ],
+  "real_chrome_desktop_mobile": true,
+  "server_processes_stopped": true,
+  "note": "Synthetic demo fixtures, NOT held-out accuracy evidence. Demo DB is ignored by Git."
+}

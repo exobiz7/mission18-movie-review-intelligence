@@ -1,19 +1,19 @@
 # MISSION 18 — 상세설계 및 구현개발 실행계획서
-> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.5 — G3 Real AI Sentiment End-to-End Verified**
+> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.6 — G4 Responsive UI and Real Browser Evidence Verified**
 
 | 항목 | 내용 |
 |---|---|
 | 작성 기준일 | 2026-10-10 (Asia/Seoul) |
-| 문서 상태 | **G0/G1/G2/G3 LOCAL PASS — actual pinned Korean movie sentiment service implemented and verified**. All 13 FastAPI APIs, Alembic/SQLite, review CRUD+positive score+recent10, Streamlit form→real model→DB, 46 pytest+11 live G3 checks PASS. G4–G8 pending |
+| 문서 상태 | **G0–G4 LOCAL PASS — FastAPI/Streamlit/movie/review/real AI model and responsive UI verified**. 13 real APIs, 59 pytest PASS, G3 real model smoke 11 checks PASS, G4 Chrome+API 9 checks PASS, 3 movies ×12 reviews and 4 real browser screenshots. G5–G8 pending |
 | 대상 미션 | Codeit AI Engineering Sprint Mission 18 |
 | 지정 프로젝트 루트 | `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review` |
 | 제출 경로 | `미션18/{팀명}_{이름}/` (실제 값 미제공: 제출 패키징 시 확정) |
 | 공식 프론트엔드 / 백엔드 | Streamlit / FastAPI |
 | 목표 | 채점 적합성, 포트폴리오 설득력, 실제 재현성, 장기 재사용 가능한 리뷰/VOC AI 자산 |
-| 본 문서의 범위 | **상세설계 및 진행현황 기준본**. G3 리뷰 CRUD·실제 ML 추론까지의 구현과 테스트 근거 포함. G4 UI 완성, G5 성능/정확도 비교, G6 보안 강화, G7 클라우드 배포, G8 최종 보고서/제출은 미완료 |
+| 본 문서의 범위 | **상세설계 및 진행현황 기준본**. G4 UI/UX·반응형 브라우저 점검·멱등 데모 시드·실측 스크린샷까지의 구현/검증 근거 포함. G5 실제 평가/경량화, G6 보안, G7 클라우드, G8 최종 PDF·제출은 미완료 |
 | 기준 우선순위 | ① 사용자 제공 미션 원문 ② 사용자 제공 사전 문서 3종 ③ 명시적으로 검증한 공식 외부 자료 ④ 이 문서에서 새로 제안한 설계 |
-| 기술 리스크 | 지정 루트 FULL_HOST 접근 확인. 로컬 Git 및 Python 3.12.14 격리. Movie/Review API와 실제 고정 KoELECTRA 모델의 로컬 E2E 검증 완료. 대표 샘플의 정확도/교정, 클라우드 배포, 제출 증거는 아직 미검증 |
-| GitHub 현황 | 연결된 GitHub `exobiz7` 확인. M18 전용 remote 없음; **로컬 Git 커밋 `12483a3` 생성**, GitHub에는 생성/푸시하지 않음 |
+| 기술 리스크 | 지정 루트 FULL_HOST 접근 확인. 로컬 Git 및 Python 3.12.14 격리. Movie/Review API와 실제 고정 KoELECTRA 모델의 로컬 E2E 검증 완료. 대표 독립 데이터셋의 정확도/교정, 공개 클라우드 배포 및 최종 제출 PDF는 아직 미검증 (G4 증빙 이미지는 일부 확보) |
+| GitHub 현황 | 연결된 GitHub `exobiz7` 확인. M18 전용 remote 없음; G0–G4 변경은 로컬 `main`에서 버전 관리하며 GitHub 생성/푸시 및 CI 실환경 실행은 미수행 |
 | 사용자 승인이 필요한 사실 | 제출용 정확한 `{팀명}_{이름}`, 실제 배포 서비스/계정·지출 승인, 기존 로컬 저장소와의 충돌 여부 |
 
 ---
@@ -1548,3 +1548,45 @@ Environment: `uv.lock` resolved 96 packages including optional `ml` group; local
 ### 25.4 다음 작업 단위
 
 **G4 — polished, accessible, responsive Streamlit experience and evidence-friendly 3-movie/≥10-review-per-movie UI**; next **G5 — real holdout benchmark, size/cold-start/latency/memory/optional ONNX comparison**; finally G6 security, G7 persistent public cloud, G8 final PDF + captures + submission archive. GitHub Actions was authored but remote execution is not claimed without a connected repository.
+
+
+---
+
+## 26. Phase 4 / G4 실제 반응형 UI 및 브라우저 증거 확보 (v1.6, 2026-10-10)
+
+**G4 LOCAL PASS**. 상위 4단계 동선, 실제 모델·SQLite를 사용하는 시연 DB, Chrome 데스크톱/모바일 캡처가 완성되었다. 1차 근거는 `docs/G4_ACCEPTANCE.md`, `docs/ADR/0005-g4-ui-evidence-and-isolated-demo-seed.md`, `docs/evidence/g4_manifest.json`이며, G4 이전 섹션의 NOT TESTED 기록은 당시 이력으로만 보존한다.
+
+### 26.1 구현 항목
+
+- `frontend/app.py`: 4탭(영화 둘러보기, 리뷰 작성·분석, 최근 리뷰 10개, 영화 관리), 영화별 리뷰 선택, 감성 긍정 지수/확신도 구분, 검색·장르·빈 데이터·오프라인·모델 준비 상태·삭제 확인 구현.
+- `frontend/styles.css`: 단정한 카드·히어로·대체 포스터·태블릿/모바일 CSS. 외부 포스터 URL이 동작하지 않아도 갤러리는 사용 가능하나, 대체 이미지를 실제 영화 포스터라고 주장하지 않는다.
+- `frontend/ui_helpers.py`: 영화별 평균이 아닌 리뷰 수 가중평균으로 헤더 요약, UTC 날짜, 사용자 문자열 HTML 이스케이프, 상태 표기 분리.
+- `scripts/seed_demo.py`: **로컬 루프백 HTTP 전용** 시드. 3개 가상 영화, 각 12개 서로 다른 합성 한국어 리뷰, 작성자 마커 기반 멱등. DB 직접 쓰기·데이터 초기화·외부 서버 쓰기 금지.
+- `scripts/prepare_g4_demo.py`: 격리된 `.local/demo/movie_reviews.sqlite3` 저장. 실제 모델 + Uvicorn + Streamlit을 독립 포트에 올려 시드 2회(중복 여부 검증), 실제 Chrome으로 데스크톱 갤러리/리뷰/최근10 및 모바일 갤러리를 캡처하고 프로세스는 자가 종료.
+- `tests/test_g4_ui_helpers.py`: HTML 무해화, 가중평균, 시간, 외부 seed URL 차단, 프론트의 ORM/ML 직접 import 차단, 오프라인 AppTest.
+
+### 26.2 실제 검증 결과
+
+| 구분 | 실제 판정 | 주의 |
+|---|---|---|
+| G1–G4 통합 pytest | **59 tests PASS**, 3 additional subtests | Starlette `httpx` deprecation warning 1건, 테스트 실패 아님 |
+| G2/G3 실서비스 회귀 | **PASS** | G2 10 checkpoints, G3 11 checkpoints (실모델) |
+| G4 Chrome/API 재현 | **9/9 PASS** | 데스크톱 1440×920, 모바일 390×844 실제 브라우저 |
+| 영화/리뷰 demo DB | **3 × 12 = 36 reviews** | 합성 리뷰, 실제 모델로 추론됨. 독립 성능 평가자료 아님 |
+| Seed 멱등성 | 연속 재실행 **추가 영화 0·리뷰 0** | 전용 로컬 DB, reset 및 삭제 없음 |
+| G4 캡처 | `docs/evidence/g4_gallery_desktop.png`, `g4_review_desktop.png`, `g4_recent_desktop.png`, `g4_gallery_mobile.png` | 체크섬/사이즈는 `g4_manifest.json`에 기록 |
+| M13/M17 보존 | 변경 없음 | 기존 실행 프로세스 종료/교체 없음 |
+| G5 독립 모델 정확도/교정/ONNX | **NOT TESTED** | 다음 단계 |
+| G6 보안/G7 공개배포/G8 PDF | **NOT COMPLETE** | 특히 공개 write 인증 없음 |
+
+### 26.3 발견/수정한 UI 결함과 한계
+
+- 모바일에서 확장된 사이드바가 콘텐츠를 가리던 문제를 자동 사이드바로 전환 후 실제 390px 브라우저에서 재확인.
+- Streamlit 제목 검색은 Enter 또는 blur 후 적용됨을 Chrome 테스트로 확인.
+- 비활성 탭 DOM은 숨김 처리되므로 UI E2E는 활성/보이는 요소만 조회.
+- 포스터 URL은 백엔드에서 fetch하지 않으며, fallback placeholder 이미지만 자체 CSS 제공. 모바일 첫 화면에는 요약 카드가 먼저 나오고 갤러리는 스크롤 필요.
+- 확보한 G4 화면 증빙은 실제 스크린샷이지만 최종 PDF의 **3개 영화 각각 ≥10개 리뷰 화면**, 전체 FastAPI `/docs` 13-route 증빙은 별도 G8 작업. WCAG 감사를 완료했다고 주장하지 않는다.
+
+### 26.4 이어서 수행할 작업
+
+**G5 — 동일 조건에서 분리된 데이터의 실제 영화 감성 모델 정확도, macro-F1, precision/recall, latency p50/p95, peak RSS, cold start, 모델 크기를 측정하고 최소 하나의 ONNX/INT8 또는 경량화 프로브를 수행.** 추정/카드 수치와 실험 관찰 수치를 명확히 분리한 `MODEL_BENCHMARK.md`를 작성한다. G6–G8은 인증/보안, 영속 배포, PDF/제출의 별도 승인 단계이다.

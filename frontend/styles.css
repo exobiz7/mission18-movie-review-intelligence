@@ -1,0 +1,48 @@
+/* Mission18 G4 Streamlit-only styling. No external CSS/JS dependency. */
+:root {
+  --m18-ink: #1c2a36;
+  --m18-muted: #667887;
+  --m18-accent: #16766e;
+  --m18-paper: #fbfcfc;
+  --m18-edge: #dce6e6;
+}
+.block-container { max-width: 1320px; padding-top: 2.1rem; }
+header[data-testid="stHeader"] { background: transparent; }
+.m18-kicker {
+  display:inline-block; font-weight:800; letter-spacing:.16em;
+  font-size:.72rem; color:#187c71; margin-bottom:.4rem;
+}
+.m18-hero {
+  padding: 1.5rem 1.6rem; border:1px solid #d9e8e6; border-radius:22px;
+  background:linear-gradient(115deg,#f4faf8 0%,#f5f8fc 65%,#fcf6ef 100%);
+  margin-bottom:1.1rem;
+}
+.m18-hero h1 { color:#1b303a; font-size:clamp(1.65rem,3.2vw,2.55rem); margin:.2rem 0 .4rem; font-weight:790; line-height:1.18; }
+.m18-hero p { color:#576b78; line-height:1.65; margin:0; font-size:.96rem; }
+.m18-poster {
+  border:1px solid rgba(16,81,77,.16); border-radius:15px;
+  min-height:150px; display:flex; flex-direction:column;
+  justify-content:space-between; padding:1rem; box-shadow:0 6px 18px rgba(40,66,72,.06);
+  background:linear-gradient(153deg,#1e5e64 0%,#276d75 40%,#d08d60 100%);
+  color:#fff;
+}
+.m18-poster.alt1 { background:linear-gradient(153deg,#223e60,#60517a 53%,#b3777c); }
+.m18-poster.alt2 { background:linear-gradient(153deg,#50485f,#a3655e 53%,#dfa966); }
+.m18-poster .m18-poster-eyebrow { font-size:.65rem; font-weight:750; letter-spacing:.17em; opacity:.85; }
+.m18-poster .m18-poster-title { font-size:clamp(1rem,1.3vw,1.23rem); font-weight:800; line-height:1.5; overflow-wrap:anywhere; }
+.m18-poster .m18-poster-footer { font-size:.68rem; font-weight:600; opacity:.82; }
+.m18-result {
+  border-left:4px solid #16766e; padding:.65rem 1rem;
+  background:#eff8f5; border-radius:0 9px 9px 0; margin:.3rem 0 1rem;
+}
+.m18-result p { margin:0; color:#33545b; font-size:.85rem; }
+.m18-micro { color:#71828d; font-size:.83rem; margin-bottom:.6rem; }
+div[data-testid="stMetric"] {
+  background:rgba(240,248,247,.65); padding: .8rem .95rem;
+  border-radius:13px; border:1px solid rgba(139,181,174,.25);
+}
+@media(max-width:768px) {
+  .block-container {padding-top:1rem; padding-left:.8rem; padding-right:.8rem;}
+  .m18-hero { padding:1rem; border-radius:16px; }
+  .m18-poster {min-height:125px;}
+}
