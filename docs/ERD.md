@@ -76,8 +76,8 @@ Alembic revision 0001 must create named constraints:
 
 **Indexes:**
 
-1. `ix_reviews_movie_created_id`: (`movie_id`, `created_at DESC`, `id DESC`).
-2. `ix_reviews_created_id`: (`created_at DESC`, `id DESC`).
+1. `ix_reviews_movie_created_id`: (`movie_id`, `created_at`, `id`) ascending physical index; within a fixed movie_id, backward index scan supports latest-first order.
+2. `ix_reviews_created_id`: (`created_at`, `id`) ascending physical index; backward scan supports latest-first order.
 3. `movies.id` and `reviews.id` already backed by PK indexes.
 4. Add title/genre indexes only if `EXPLAIN` shows value; naive B-tree generally does not accelerate `%substring%` search.
 

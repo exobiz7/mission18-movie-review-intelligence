@@ -1,18 +1,18 @@
 # MISSION 18 — 상세설계 및 구현개발 실행계획서
-> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.3 — G1 Contract Gate Verified**
+> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.4 — G2 Real Vertical Slice Verified**
 
 | 항목 | 내용 |
 |---|---|
 | 작성 기준일 | 2026-10-09 (Asia/Seoul) |
-| 문서 상태 | **G0/G1 LOCAL PASS — design and dependency contract locked**. Python 3.12.14, 13-route / 8-schema API contract, ERD, sentiment semantics, uv.lock, contract tests; API/AI/UI 구현 미착수 |
+| 문서 상태 | **G0/G1/G2 LOCAL PASS — first movie vertical slice implemented and verified**. FastAPI Movie CRUD, Alembic 0001, SQLite persistence, Streamlit HTTP client, API/real-HTTP/UI tests. Reviews and real sentiment model deferred to G3 |
 | 대상 미션 | Codeit AI Engineering Sprint Mission 18 |
 | 지정 프로젝트 루트 | `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review` |
 | 제출 경로 | `미션18/{팀명}_{이름}/` (실제 값 미제공: 제출 패키징 시 확정) |
 | 공식 프론트엔드 / 백엔드 | Streamlit / FastAPI |
 | 목표 | 채점 적합성, 포트폴리오 설득력, 실제 재현성, 장기 재사용 가능한 리뷰/VOC AI 자산 |
-| 본 문서의 범위 | **상세설계 및 구현개발 계획만 수립**. 코드 구현·배포·테스트 통과·캡처 완료를 주장하지 않음 |
+| 본 문서의 범위 | **상세설계 및 진행현황 기준본**. G2 영화 CRUD 구현과 로컬 테스트 근거를 포함하되, G3 리뷰·AI 및 클라우드 배포/최종 제출은 아직 미실행 |
 | 기준 우선순위 | ① 사용자 제공 미션 원문 ② 사용자 제공 사전 문서 3종 ③ 명시적으로 검증한 공식 외부 자료 ④ 이 문서에서 새로 제안한 설계 |
-| 기술 리스크 | 지정 루트 FULL_HOST 접근 확인. 로컬 Git 초기화 완료, Python 3.12.14 격리. 모델 호환성·실제 서비스·테스트 미검증 |
+| 기술 리스크 | 지정 루트 FULL_HOST 접근 확인. 로컬 Git 및 Python 3.12.14 격리. Movie API/Streamlit 실제 동작은 검증됨. 실제 감성분석 모델, 공개배포, 보고서 캡처 미검증 |
 | GitHub 현황 | 연결된 GitHub `exobiz7` 확인. M18 전용 remote 없음; **로컬 Git 커밋 `12483a3` 생성**, GitHub에는 생성/푸시하지 않음 |
 | 사용자 승인이 필요한 사실 | 제출용 정확한 `{팀명}_{이름}`, 실제 배포 서비스/계정·지출 승인, 기존 로컬 저장소와의 충돌 여부 |
 
@@ -1471,3 +1471,38 @@ Tests/CI → Cloud Deployment → Evidence/PDF → Submission.
 **G1 PASS means design and local contract checks only.** No FastAPI route, database migration, real ML inference, Streamlit E2E, actual GitHub Actions execution, cloud URL, or submission screenshot has passed at G1. Do not conflate contract algebra tests with model quality measurement.
 
 **Next phase: G2 — implement SQLAlchemy/Alembic 0001 migration and first Movie CRUD vertical slice, prove actual HTTP and minimal Streamlit client using dedicated test DB.** Preserve the locked API contract and document any changes through ADR.
+
+
+---
+
+## 24. Phase 2 / G2 실제 구현 및 검증 기록 (v1.4, 2026-10-09)
+
+**G2 LOCAL PASS.** This updates the historical G2 NOT TESTED sections above without claiming review/AI/cloud completion. The full evidence SSOT is `docs/G2_ACCEPTANCE.md`.
+
+### 24.1 Implemented paths and boundaries
+
+- FastAPI: `backend/app/main.py`, `routers/movies.py`, `services.py`, `schemas.py`, `errors.py`, `db.py`, `models.py`.
+- Actual routes: GET `/health`, GET `/readiness`, POST/GET `/movies`, GET/DELETE `/movies/{movie_id}`. Review & aggregate endpoints are G3 **NOT IMPLEMENTED**.
+- Alembic `0001`: Movie and reserved Review tables, named FK/CHECK constraints, FK cascade, index consistency; `alembic check` returned `No new upgrade operations detected.`.
+- Streamlit `frontend/app.py` and `frontend/api_client.py`: API-only movie creation/list/search/delete, poster fallback, errors, deletion confirmation. No direct frontend DB access.
+- `tests/test_movies_api.py`, `tests/test_frontend_client.py`: test-driven SQLite/HTTP contracts and negative cases.
+- `scripts/smoke_g2.py`: starts own isolated real Uvicorn + Streamlit processes on temporary localhost ports, creates/disposes uniquely named fixture DB in ignored M18-local `.local/`, verifies Streamlit form→FastAPI POST→DB persistence, process restart, deletes and shutdown. No other project process touched.
+- `docs/ADR/0003-g2-index-parity.md`: SQLite Alembic index reflection drift corrected; API sort remains DESC while physical composite indexes use ASC for portable reverse scanning.
+
+### 24.2 Actually observed verification
+
+| Check | Evidence | Status |
+|---|---|---|
+| API integration | 22 tests passed (at G2 tests-only invocation) | PASS |
+| Real HTTP + Streamlit AppTest | 10/10 checkpoints: API create/list/detail/delete/docs, UI form→HTTP, persistence restart, readiness error honesty | PASS |
+| Alembic `upgrade/current/upgrade` | fresh DB revision `0001 (head)` persists, repeated upgrade succeeds | PASS |
+| Alembic schema reflection | `No new upgrade operations detected.` | PASS |
+| SQLite review FK CASCADE | direct fixture write then DELETE movie leaves no reviews | PASS |
+| Readiness | 503 `MODEL_UNAVAILABLE` because model is genuinely absent | PASS (intentional) |
+| Actual NLP model, review endpoints, public deploy | Not executed in G2 | NOT TESTED |
+
+Warnings are reported transparently in the G2 acceptance record. Synthetic fixtures are integration-test data, not evidence of model quality.
+
+### 24.3 Next implementation unit
+
+**G3: Review CRUD, real Korean movie review sentiment model selection and pinned immutable revision, model load-once, atomic inference+review insert, movie-level average and recent 10, robust errors and actual runtime tests.** Preserve G1 manifest invariants. GitHub workflow is authored, but actual remote CI remains NOT TESTED until an M18 GitHub remote is established.

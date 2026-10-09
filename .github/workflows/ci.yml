@@ -1,4 +1,4 @@
-name: Mission18 G1 Contracts
+name: Mission18 G1 G2 Contracts and Movie Slice
 
 on:
   push:
@@ -34,13 +34,16 @@ jobs:
         run: uv run --locked --group dev python scripts/check_contracts.py
 
       - name: Validate Python syntax
-        run: uv run --locked --group dev python -m compileall -q scripts tests
+        run: uv run --locked --group dev python -m compileall -q backend frontend scripts tests
 
       - name: Ruff lint
-        run: uv run --locked --group dev ruff check scripts tests
+        run: uv run --locked --group dev ruff check .
 
       - name: Ruff format
-        run: uv run --locked --group dev ruff format --check scripts tests
+        run: uv run --locked --group dev ruff format --check backend frontend scripts tests
 
-      - name: Contract unit tests
-        run: uv run --locked --group dev pytest -q tests/test_contract_spec.py
+      - name: G1 + G2 integration tests
+        run: uv run --locked --group dev pytest -q
+
+      - name: G2 real Uvicorn and Streamlit smoke
+        run: uv run --locked --group dev python scripts/smoke_g2.py

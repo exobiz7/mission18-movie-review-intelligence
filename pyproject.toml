@@ -28,6 +28,7 @@ default-groups = ["dev"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 addopts = "-ra"
 markers = [
     "live_model: requires pinned, real inference weights; excluded from G1",
