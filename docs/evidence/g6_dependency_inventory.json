@@ -1,0 +1,625 @@
+{
+  "status": "PASS_WITH_REVIEW_FLAGS",
+  "recorded_at_utc": "2026-10-10T14:52:01.162314+00:00",
+  "lock_sha256": "75395f9821aee46e2da06f969d1a1662634e6def6ac18078f6c8375ffeaa5076",
+  "tracked_source_files": 95,
+  "scanned_text_files": 83,
+  "tracked_secret_patterns_found": 0,
+  "package_count": 86,
+  "license_unknown_count": 0,
+  "manual_review_package_names": [
+    "psycopg",
+    "psycopg-binary"
+  ],
+  "packages": [
+    {
+      "name": "alembic",
+      "version": "1.20.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "altair",
+      "version": "6.3.0",
+      "license_metadata": "Copyright (c) 2015-2025, Vega-Altair Developers\nAll rights reserved.\n\nRedistribution and use in source and binary forms, with or without\nmodification,... (truncated metadata)",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "annotated-doc",
+      "version": "0.0.5",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "annotated-types",
+      "version": "0.8.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "anyio",
+      "version": "4.15.1",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "attrs",
+      "version": "26.1.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "certifi",
+      "version": "2026.7.22",
+      "license_metadata": "MPL-2.0",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "charset-normalizer",
+      "version": "3.5.2",
+      "license_metadata": "MIT",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "click",
+      "version": "8.5.0",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "cloudpickle",
+      "version": "3.1.2",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "coverage",
+      "version": "7.16.2",
+      "license_metadata": "Apache-2.0",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "fastapi",
+      "version": "0.143.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "filelock",
+      "version": "4.0.12",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "flatbuffers",
+      "version": "25.12.19",
+      "license_metadata": "Apache 2.0",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "fsspec",
+      "version": "2026.9.0",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "greenlet",
+      "version": "3.5.6",
+      "license_metadata": "MIT AND PSF-2.0",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "h11",
+      "version": "0.16.0",
+      "license_metadata": "MIT",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "hf-xet",
+      "version": "1.7.0",
+      "license_metadata": "Apache-2.0",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "httpcore",
+      "version": "1.0.9",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "httptools",
+      "version": "0.8.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "httpx",
+      "version": "0.28.1",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "huggingface_hub",
+      "version": "0.36.2",
+      "license_metadata": "Apache",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "idna",
+      "version": "3.20",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "iniconfig",
+      "version": "2.3.1",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "itsdangerous",
+      "version": "2.2.0",
+      "license_metadata": "OSI Approved :: BSD License",
+      "license_source": "classifiers",
+      "manual_review": false
+    },
+    {
+      "name": "Jinja2",
+      "version": "3.1.6",
+      "license_metadata": "OSI Approved :: BSD License",
+      "license_source": "classifiers",
+      "manual_review": false
+    },
+    {
+      "name": "joblib",
+      "version": "1.6.0",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "jsonschema",
+      "version": "4.26.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "Mako",
+      "version": "1.4.3",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "MarkupSafe",
+      "version": "3.0.4",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "ml_dtypes",
+      "version": "0.6.0",
+      "license_metadata": "Apache-2.0",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "mpmath",
+      "version": "1.3.0",
+      "license_metadata": "BSD",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "narwhals",
+      "version": "2.26.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "networkx",
+      "version": "3.7",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "numpy",
+      "version": "2.5.3",
+      "license_metadata": "BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "onnx",
+      "version": "1.23.2",
+      "license_metadata": "Apache-2.0",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "onnxruntime",
+      "version": "1.31.0",
+      "license_metadata": "MIT License",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "opentelemetry-api",
+      "version": "1.45.1",
+      "license_metadata": "Apache-2.0",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "packaging",
+      "version": "26.3",
+      "license_metadata": "Apache-2.0 OR BSD-2-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "pandas",
+      "version": "3.0.6",
+      "license_metadata": "BSD 3-Clause License\n\n Copyright (c) 2008-2011, AQR Capital Management, LLC, Lambda Foundry, Inc. and PyData Development Team\n All rights reserved.\n\n ... (truncated metadata)",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "pillow",
+      "version": "12.3.0",
+      "license_metadata": "MIT-CMU",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "playwright",
+      "version": "1.63.0",
+      "license_metadata": "Apache-2.0",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "pluggy",
+      "version": "1.6.0",
+      "license_metadata": "MIT",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "protobuf",
+      "version": "7.36.2",
+      "license_metadata": "3-Clause BSD License",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "psutil",
+      "version": "7.2.2",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "psycopg",
+      "version": "3.3.6",
+      "license_metadata": "LGPL-3.0-only",
+      "license_source": "license-expression",
+      "manual_review": true
+    },
+    {
+      "name": "psycopg-binary",
+      "version": "3.3.6",
+      "license_metadata": "LGPL-3.0-only",
+      "license_source": "license-expression",
+      "manual_review": true
+    },
+    {
+      "name": "pyarrow",
+      "version": "25.0.1",
+      "license_metadata": "Apache-2.0",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "pydantic",
+      "version": "2.14.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "pydantic-settings",
+      "version": "2.15.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "pydantic_core",
+      "version": "2.50.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "pydeck",
+      "version": "0.9.3",
+      "license_metadata": "Apache License 2.0",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "pyee",
+      "version": "13.0.1",
+      "license_metadata": "MIT",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "Pygments",
+      "version": "2.21.0",
+      "license_metadata": "BSD-2-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "pytest",
+      "version": "9.1.1",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "pytest-cov",
+      "version": "7.1.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "python-dateutil",
+      "version": "2.9.0.post0",
+      "license_metadata": "Dual License",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "python-dotenv",
+      "version": "1.2.4",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "python-multipart",
+      "version": "0.0.32",
+      "license_metadata": "Apache-2.0",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "PyYAML",
+      "version": "6.0.3",
+      "license_metadata": "MIT",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "referencing",
+      "version": "0.37.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "regex",
+      "version": "2026.9.29",
+      "license_metadata": "Apache-2.0 AND CNRI-Python",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "requests",
+      "version": "2.34.2",
+      "license_metadata": "Apache-2.0",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "rpds-py",
+      "version": "2026.9.1",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "ruff",
+      "version": "0.16.10",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "safetensors",
+      "version": "0.8.0",
+      "license_metadata": "OSI Approved :: Apache Software License",
+      "license_source": "classifiers",
+      "manual_review": false
+    },
+    {
+      "name": "scikit-learn",
+      "version": "1.9.1",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "scipy",
+      "version": "1.18.1",
+      "license_metadata": "Copyright (c) 2001-2002 Enthought, Inc. 2003, SciPy Developers.\n All rights reserved.\n\n Redistribution and use in source and binary forms, with or wit... (truncated metadata)",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "setuptools",
+      "version": "84.0.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "six",
+      "version": "1.17.0",
+      "license_metadata": "MIT",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "SQLAlchemy",
+      "version": "2.1.4",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "starlette",
+      "version": "1.7.0",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "streamlit",
+      "version": "1.65.0",
+      "license_metadata": "Apache-2.0",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "sympy",
+      "version": "1.14.0",
+      "license_metadata": "BSD",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "threadpoolctl",
+      "version": "3.7.0",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "tokenizers",
+      "version": "0.22.2",
+      "license_metadata": "OSI Approved :: Apache Software License",
+      "license_source": "classifiers",
+      "manual_review": false
+    },
+    {
+      "name": "toml",
+      "version": "0.10.2",
+      "license_metadata": "MIT",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "torch",
+      "version": "2.14.1",
+      "license_metadata": "Apache-2.0 AND Apache-2.0 WITH LLVM-exception AND BSD-2-Clause AND BSD-3-Clause AND BSL-1.0 AND MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "tqdm",
+      "version": "4.70.1",
+      "license_metadata": "MPL-2.0 AND MIT",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "transformers",
+      "version": "4.57.6",
+      "license_metadata": "Apache 2.0 License",
+      "license_source": "license-field",
+      "manual_review": false
+    },
+    {
+      "name": "typing-inspection",
+      "version": "0.4.4",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "typing_extensions",
+      "version": "4.16.0",
+      "license_metadata": "PSF-2.0",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "urllib3",
+      "version": "2.8.0",
+      "license_metadata": "MIT",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "uvicorn",
+      "version": "0.54.0",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    },
+    {
+      "name": "websockets",
+      "version": "17.2",
+      "license_metadata": "BSD-3-Clause",
+      "license_source": "license-expression",
+      "manual_review": false
+    }
+  ],
+  "limitations": [
+    "Metadata-based license inventory is not legal review; transitive content rights differ.",
+    "Regex-based tracked-secret screen does not replace an external secret scanning service.",
+    "No external CVE/advisory database was queried; uv pip check validates dependency graph only.",
+    "NSMC source license declarations conflict; raw review text remains excluded from Git.",
+    "GitHub CI remote has not been executed without a deliberate M18 repository remote."
+  ]
+}

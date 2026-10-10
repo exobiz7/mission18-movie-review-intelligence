@@ -1,6 +1,6 @@
 # Mission 18 — Movie Review Sentiment Intelligence
 
-**Status (2026-10-10): G0–G5 LOCAL PASS. 13 real backend APIs, G4 Chrome evidence, G5 2,000-review four-variant model benchmark and ONNX/INT8 experiment complete. INT8 is NOT approved for runtime due extreme positive-probability drift. G6–G8 pending.**
+**Status (2026-10-10): G0–G5 LOCAL PASS; G6 LOCAL SECURITY AND CLEAN-ROOM PASS, HOSTED GITHUB CI STILL UNVERIFIED. 13 contracted APIs, read-only/token/loopback write access, request limits, safe errors, isolated fresh install and real HTTP checks. G7/G8 pending.**
 
 Canonical local root: `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review`.
 
@@ -12,8 +12,8 @@ Implement the official **Streamlit + FastAPI** movie/review/sentiment applicatio
 
 - `frontend/` — G4 responsive cinema gallery and HTTP-only movie/review UI; CSS + safe UI formatting helpers
 - `backend/app/` — FastAPI with 13 actual routes, isolated SQLAlchemy transactions, verified real sentiment adapter
-- `scripts/` — G0/G1 checks, G2/G3 smokes, G4 browser demo, G5 pinned dataset, model benchmarking and ONNX/INT8 conversion
-- `tests/` — G0–G5 contract/API/DB/offline UI tests plus pure evidence-consistency checks (run `pytest -q` for current count)
+- `scripts/` — G0–G5 checks and real/model/browser smokes; G6 security smoke, clean-room reinstall, package-license/secret audits
+- `tests/` — 81 current local unit/integration/API/security/UI tests, including G6 public-write policies and fail-closed errors
 - `docs/` — architecture/contracts/decisions/evidence
 - `docs/RECONNAISSANCE.md` — **real host observations** and Phase 0 gate
 - `docs/ADR/0001-isolated-bootstrap.md` — bootstrap decision record
@@ -44,13 +44,13 @@ git status --short --branch
 
 ## Implementation boundary
 
-**Canonical design:** `MISSION18_DETAILED_DESIGN_IMPLEMENTATION_PLAN.md` (v1.7/G5 revision). G5 actual benchmark: `docs/MODEL_BENCHMARK.md`, `docs/G5_ACCEPTANCE.md`, `docs/evidence/g5_summary.json`. Production AI backend stays on verified original PyTorch.
+**Canonical design:** `MISSION18_DETAILED_DESIGN_IMPLEMENTATION_PLAN.md` (v1.8/G6 revision). G6 evidence: `docs/G6_ACCEPTANCE.md`, `docs/G6_PUBLIC_DEPLOYMENT_SECURITY.md` and `docs/evidence/g6_cleanroom_manifest.json`. PyTorch production model remains unchanged.
 
 **Do not copy M13 model checkpoints or M17 direct-storage code into the M18 frontend.** The backend owns DB and inference; reuse patterns after license/contract verification.
 
 ## Next gate
 
-**Next: Phase 6/G6** — security and reproducibility hardening, offline clean-room checks, deployment-suitable write protection, dependency/license and error-path audits. G7 public cloud deployment and G8 final PDF/submission are pending.
+**Next: G6 hosted CI verification (requires a deliberate M18 GitHub remote), then G7 persistent HTTPS public deployment and G8 PDF/submission.** Until actual external CI passes, do not claim full G6 exit gate despite local PASS.
 
 ## G1 local checks
 
@@ -164,3 +164,26 @@ done
 ```
 
 **Data and license boundaries:** Original NSMC README does not specify a license, whereas the HF mirror labels CC-BY-2.0 and older metadata differs. Original review text, per-item predictions and ONNX binaries are confined to Git-ignored `.local/benchmark/`; only aggregate evidence and reusable benchmark scripts are committed. Review source rights before any public redistribution.
+
+
+## G6 public write security and clean-room reproducibility
+
+The default `WRITE_POLICY=loopback` permits local development mutations from actual local peer addresses only; an incoming X-Forwarded-For header cannot grant local rights. **Never put this profile behind a public reverse proxy.**
+
+For a public visitor demo the safe default is **read-only**: configure `PUBLIC_DEPLOYMENT=true`, `WRITE_POLICY=read_only`, persistent `DATABASE_URL=postgresql+psycopg://...` and explicit HTTPS `CORS_ALLOW_ORIGINS`. Set `FRONTEND_READ_ONLY=true` in the Streamlit service. Direct POST/DELETE returns HTTP 403. A private server-to-server administrator may use `WRITE_POLICY=token` and an operator-secret `API_WRITE_TOKEN` with a 32+-byte credential; **this is not individual Streamlit user authentication**.
+
+Public deployment with `PUBLIC_DEPLOYMENT=true` and loopback writes, SQLite or insecure/wildcard CORS origins is rejected at startup. All POST bodies are bounded to 16KiB (including streaming/chunked), errors use safe envelope + request ID and process time headers. Real rate-limiting, TLS ingress, public visitor identity, managed backups and external CVE scanning remain G7 work.
+
+See **`docs/G6_PUBLIC_DEPLOYMENT_SECURITY.md`** for exact example configuration and operator precautions. G6 local evidence: `docs/G6_ACCEPTANCE.md`.
+
+```bash
+cd "/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review"
+.venv/bin/pytest -q
+.venv/bin/python scripts/smoke_g6.py
+.venv/bin/python scripts/cleanroom_g6.py
+.venv/bin/python scripts/audit_g6.py
+```
+
+Clean-room validation copies source without `.git`, `.venv`, `.local`, secrets, model weights or user databases; installs dependencies in a new virtualenv; executes contract, package integrity, Ruff, tests and actual G2 HTTP+UI smoke. Actual G3 model is checked independently in the existing M18 environment.
+
+**GitHub Actions is authored but not run** because this M18 project has no dedicated GitHub remote. No repository was created or pushed automatically.

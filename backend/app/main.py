@@ -60,7 +60,8 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=get_settings().allowed_origins,
     allow_methods=["GET", "POST", "DELETE"],
-    allow_headers=["Content-Type", "X-Request-ID"],
+    allow_headers=["Content-Type", "X-Request-ID", "Authorization"],
+    expose_headers=["X-Request-ID", "X-Process-Time-Ms"],
 )
 register_error_handlers(app)
 app.include_router(movies_router)

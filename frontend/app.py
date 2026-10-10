@@ -5,8 +5,10 @@ Only FastAPI HTTP is used for persistent data and model inference.
 
 from __future__ import annotations
 
+import os
 from datetime import date
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import streamlit as st
 from api_client import ApiClientError, MovieApiClient
@@ -32,6 +34,13 @@ st.markdown(
     unsafe_allow_html=True,
 )
 api = MovieApiClient()
+# A server-side backend bearer token is NOT visitor authentication.
+# Remote/public demo clients default to read-only, even with a write token.
+ui_read_only = (
+    os.environ.get("FRONTEND_READ_ONLY", "").lower() in {"1", "true", "yes", "on"}
+    or os.environ.get("PUBLIC_DEPLOYMENT", "").lower() in {"1", "true", "yes", "on"}
+    or urlsplit(api.base_url).hostname not in {"127.0.0.1", "localhost", "::1"}
+)
 
 
 def show_error(prefix: str, exc: ApiClientError) -> None:
@@ -58,7 +67,7 @@ def render_review_details(review: dict, *, allow_delete: bool = False) -> None:
             f"예측 확신도 {review['sentiment_confidence'] * 100:.1f}% · "
             f"모델 {review['model_revision'][:12]}"
         )
-        if allow_delete:
+        if allow_delete and not ui_read_only:
             with st.expander("리뷰 삭제", expanded=False):
                 confirmed = st.checkbox(
                     "리뷰 삭제 확인",
@@ -125,6 +134,11 @@ except ApiClientError as exc:
     movies = []
     backend_online = False
     ready = False
+
+if ui_read_only:
+    st.info(
+        "읽기 전용 데모: 공개 방문자의 무단 변경을 방지하기 위해 등록·삭제가 비활성화되었습니다."
+    )
 
 with st.sidebar:
     genre_filter = st.selectbox(
@@ -226,7 +240,9 @@ with review_tab:
                 height=115,
                 placeholder="영화의 좋았던 점과 아쉬웠던 점을 구체적으로 남겨주세요.",
             )
-            posted = st.form_submit_button("리뷰 등록·분석", type="primary", disabled=not ready)
+            posted = st.form_submit_button(
+                "리뷰 등록·분석", type="primary", disabled=not ready or ui_read_only
+            )
         if posted:
             if not author.strip() or not content.strip():
                 st.error("작성자와 리뷰 내용을 모두 입력해 주세요.")
@@ -318,31 +334,31 @@ with manage_tab:
                 "영화 제목",
                 max_chars=200,
                 placeholder="영화 제목",
-                disabled=not backend_online,
+                disabled=not backend_online or ui_read_only,
             )
             director = st.text_input(
                 "감독",
                 max_chars=120,
                 placeholder="감독 이름",
-                disabled=not backend_online,
+                disabled=not backend_online or ui_read_only,
             )
             release_date = st.date_input(
-                "개봉일", value=date(2024, 1, 1), disabled=not backend_online
+                "개봉일", value=date(2024, 1, 1), disabled=not backend_online or ui_read_only
             )
             genre = st.text_input(
                 "장르",
                 max_chars=80,
                 placeholder="드라마",
-                disabled=not backend_online,
+                disabled=not backend_online or ui_read_only,
             )
             poster_url = st.text_input(
                 "포스터 URL",
                 placeholder="https://example.org/poster.png",
-                disabled=not backend_online,
+                disabled=not backend_online or ui_read_only,
                 help="HTTP(S) URL만 허용합니다. 갤러리에는 대체 포스터 디자인이 표시됩니다.",
             )
             submitted = st.form_submit_button(
-                "영화 등록", type="primary", disabled=not backend_online
+                "영화 등록", type="primary", disabled=not backend_online or ui_read_only
             )
         if submitted:
             if not all((title.strip(), director.strip(), genre.strip(), poster_url.strip())):
@@ -383,7 +399,7 @@ with manage_tab:
         if st.button(
             "선택한 영화 삭제",
             type="secondary",
-            disabled=not confirmed or not backend_online,
+            disabled=not confirmed or not backend_online or ui_read_only,
         ):
             try:
                 api.delete(delete_id)

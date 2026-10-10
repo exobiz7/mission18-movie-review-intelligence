@@ -1,4 +1,4 @@
-name: Mission18 G0 G1 G2 G3 G4 G5 App and Evidence Validation
+name: Mission18 G0-G6 App Security and Evidence Validation
 
 on:
   push:
@@ -42,11 +42,20 @@ jobs:
       - name: Ruff format
         run: uv run --locked --group dev ruff format --check backend frontend scripts tests
 
-      - name: G1 through G5 integration and benchmark-evidence checks
+      - name: G1 through G6 integration security and benchmark-evidence checks
         run: uv run --locked --group dev pytest -q
 
       - name: G2 real Uvicorn and Streamlit smoke
         run: uv run --locked --group dev python scripts/smoke_g2.py
+
+      - name: Verify installed dependency graph
+        run: uv pip check --python .venv/bin/python
+
+      - name: G6 live read-only and Bearer-protected write security
+        run: uv run --locked --group dev python scripts/smoke_g6.py
+
+      - name: G6 clean-room dependency reinstall and real G2 smoke
+        run: uv run --locked --group dev python scripts/cleanroom_g6.py
 
   pinned-real-model-smoke:
     needs: contract-and-lint

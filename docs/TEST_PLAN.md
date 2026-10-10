@@ -1,6 +1,6 @@
 # Mission 18 — Test Plan and Acceptance Matrix (G1 v1.0)
 
-**Historical G1 plan; verified G0–G5 status (2026-10-10):** G2 movie service, G3 real-model E2E, G4 actual Chrome views and reproducible 3×12 seed, G5 2K-sample model benchmark + ONNX FP32/INT8 experiment PASS. Int8 operational approval FAIL due severe per-case probability drift. G6/G7/G8 not completed. Source of truth: course mission, three premission guides, `contracts/api_contract.json`, `docs/API_CONTRACT.md`, `docs/ERD.md`, `docs/SENTIMENT_CONTRACT.md`.
+**Historical G1 plan; verified status 2026-10-10:** G0–G5 local PASS. G6 local write-access security, fail-closed errors, request bounds, clean-room dependency reinstall + G2 real service PASS. External hosted GitHub Actions NOT TESTED, so G6's original remote CI exit gate remains OPEN. G7/G8 not completed. Source of truth: course mission, three premission guides, `contracts/api_contract.json`, `docs/API_CONTRACT.md`, `docs/ERD.md`, `docs/SENTIMENT_CONTRACT.md`.
 
 ## 1. Evidence tiers
 

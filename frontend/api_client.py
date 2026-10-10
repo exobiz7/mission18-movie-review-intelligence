@@ -21,8 +21,14 @@ class MovieApiClient:
             base_url or os.environ.get("API_BASE_URL", "http://127.0.0.1:8000")
         ).rstrip("/")
         self.timeout = httpx.Timeout(timeout)
+        # Server-side secret only. Never sent to browser UI or used for GET requests.
+        self.write_token = os.environ.get("API_WRITE_TOKEN", "")
 
     def _request(self, method: str, path: str, **kwargs: Any) -> Any:
+        if method.upper() in {"POST", "PUT", "PATCH", "DELETE"} and self.write_token:
+            headers = dict(kwargs.pop("headers", {}))
+            headers["Authorization"] = f"Bearer {self.write_token}"
+            kwargs["headers"] = headers
         try:
             with httpx.Client(base_url=self.base_url, timeout=self.timeout) as client:
                 response = client.request(method, path, **kwargs)

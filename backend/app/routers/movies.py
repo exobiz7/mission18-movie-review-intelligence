@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 
 from backend.app.db import get_db
 from backend.app.schemas import ApiErrorEnvelope, MovieCreate, MovieResponse
+from backend.app.security import require_write_access
 from backend.app.services import create_movie, delete_movie, get_movie, list_movies
 
 router = APIRouter(prefix="/movies", tags=["Movies"])
@@ -24,9 +25,13 @@ LOOKUP_ERRORS = {
     status_code=status.HTTP_201_CREATED,
     summary="영화 등록",
     description="제목, 개봉일, 감독, 장르, 포스터 URL을 검증한 뒤 백엔드 DB에 영화를 등록합니다.",
-    responses=COMMON_ERRORS,
+    responses={**COMMON_ERRORS, 401: {"model": ApiErrorEnvelope}, 403: {"model": ApiErrorEnvelope}},
 )
-def post_movie(payload: MovieCreate, db: Session = Depends(get_db)) -> MovieResponse:
+def post_movie(
+    payload: MovieCreate,
+    db: Session = Depends(get_db),
+    _access: None = Depends(require_write_access),
+) -> MovieResponse:
     return create_movie(db, payload)
 
 
@@ -70,11 +75,12 @@ def get_movie_detail(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="영화 삭제",
     description="영화와 관련 리뷰를 DB ON DELETE CASCADE로 삭제합니다. 성공시 본문 없는 204를 반환합니다.",
-    responses=LOOKUP_ERRORS,
+    responses={**LOOKUP_ERRORS, 401: {"model": ApiErrorEnvelope}, 403: {"model": ApiErrorEnvelope}},
 )
 def remove_movie(
     movie_id: int = Path(ge=1, description="영화 PK"),
     db: Session = Depends(get_db),
+    _access: None = Depends(require_write_access),
 ) -> Response:
     delete_movie(db, movie_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

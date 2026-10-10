@@ -1,19 +1,19 @@
 # MISSION 18 — 상세설계 및 구현개발 실행계획서
-> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.7 — G5 Empirical Model Quality & ONNX/INT8 Trial Verified**
+> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.8 — G6 Local Security & Clean-room Hardened; Remote CI Pending**
 
 | 항목 | 내용 |
 |---|---|
 | 작성 기준일 | 2026-10-10 (Asia/Seoul) |
-| 문서 상태 | **G0–G5 LOCAL PASS — full app, responsive UI and independent-baseline model benchmarking verified**. 13 real APIs, G4 Chrome9 checks PASS, G5 20K baseline training / 2K fixed NSMC test, PyTorch/ONNX/INT8 4-variant comparison, macro F1 PyTorch 89.65%, ONNX FP32 parity, INT8 production gate FAIL. G6–G8 pending |
+| 문서 상태 | **G0–G5 LOCAL PASS; G6 LOCAL SECURITY/REPRODUCIBILITY PASS, remote CI UNVERIFIED**. 13 real APIs, G5 benchmark and ONNX/INT8 verified; G6 81 tests, 5 real write-policy smoke checks, source-only cleanroom fresh-install/real G2 HTTP UI PASS. Formal G6 hosted GitHub Actions exit criterion remains OPEN. G7/G8 pending |
 | 대상 미션 | Codeit AI Engineering Sprint Mission 18 |
 | 지정 프로젝트 루트 | `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review` |
 | 제출 경로 | `미션18/{팀명}_{이름}/` (실제 값 미제공: 제출 패키징 시 확정) |
 | 공식 프론트엔드 / 백엔드 | Streamlit / FastAPI |
 | 목표 | 채점 적합성, 포트폴리오 설득력, 실제 재현성, 장기 재사용 가능한 리뷰/VOC AI 자산 |
-| 본 문서의 범위 | **상세설계 및 진행현황 기준본**. G5 모델 검증·CPU 성능계측·ONNX FP32 및 동적 INT8 실측까지 기록. G6 보안/재현성, G7 공개 클라우드, G8 보고서/PDF 최종 제출은 미완료 |
+| 본 문서의 범위 | **상세설계 및 진행현황 기준본**. G6 승인된 로컬 보안설계(읽기 전용/서버 간 토큰/루프백), FastAPI 오류 및 요청 크기 보호, 공개 Streamlit 쓰기 차단, clean-room 의존성 재설치·회귀검증 기록. GitHub Actions 실환경 확인·G7 공개배포·G8 PDF는 미완료 |
 | 기준 우선순위 | ① 사용자 제공 미션 원문 ② 사용자 제공 사전 문서 3종 ③ 명시적으로 검증한 공식 외부 자료 ④ 이 문서에서 새로 제안한 설계 |
 | 기술 리스크 | 지정 루트 FULL_HOST 접근 확인. 로컬 Git 및 Python 3.12.14 격리. Movie/Review API와 실제 고정 KoELECTRA 모델의 로컬 E2E 검증 완료. NSMC 공개 test에서 2,000건 실측 완료. 단, 외부 사전학습 모델의 데이터 분리/누출은 독립 검증하지 못했고 교정/OOD 일반화 보장은 없음. 공개 클라우드와 PDF 미완료 |
-| GitHub 현황 | 연결된 GitHub `exobiz7` 확인. M18 전용 remote 없음; G0–G5 로컬 `main` 버전 관리. GitHub 생성/푸시 및 CI 실환경 실행은 미수행 |
+| GitHub 현황 | 연결된 GitHub `exobiz7` 확인. M18 전용 remote 없음; G0–G6 로컬 `main` 버전 관리. GitHub 생성/푸시 및 CI 실환경 실행은 아직 미수행 |
 | 사용자 승인이 필요한 사실 | 제출용 정확한 `{팀명}_{이름}`, 실제 배포 서비스/계정·지출 승인, 기존 로컬 저장소와의 충돌 여부 |
 
 ---
@@ -1628,3 +1628,47 @@ Environment: `uv.lock` resolved 96 packages including optional `ml` group; local
 **다음 Phase 6 / G6:** 인증 없는 공개 변경 API 차단, clean-room 환경 재현, CI/보안/입력/과금 검증, 실패 복구/영속 DB/모델 cold start 점검. G7은 공개 배포, G8은 최종 13-route `/docs`와 3영화×각10리뷰 캡처·PDF·제출 패키지.
 
 상세 실험 결과와 검증 조건의 정본은 `docs/MODEL_BENCHMARK.md`, `docs/G5_ACCEPTANCE.md`, `docs/ADR/0006-g5-model-comparison-and-int8-rejection.md`, `docs/evidence/g5_summary.json`을 참조한다.
+
+
+---
+
+## 28. Phase 6 / G6 로컬 보안·에러·클린룸 재현성 검증 (v1.8, 2026-10-10)
+
+**판정: G6 LOCAL PASS / 원 계획의 GitHub-hosted CI 실환경 Exit Gate는 OPEN.** 구현·실측 기준문서: `docs/G6_ACCEPTANCE.md`, `docs/G6_PUBLIC_DEPLOYMENT_SECURITY.md`, `docs/ADR/0007-g6-public-write-controls-and-reproducibility.md`. 기술 근거 JSON은 `docs/evidence/g6_cleanroom_manifest.json`, `docs/evidence/g6_dependency_inventory.json`에 저장된다.
+
+### 28.1 실서비스 변경 경로 보호
+
+1. `backend/app/security.py`에서 **13개 계약 API 자체는 변경하지 않고**, 영화 POST/DELETE, 리뷰 POST/DELETE 총 4개 변경 엔드포인트에 같은 보호 종속성을 적용했다.
+2. `WRITE_POLICY=loopback` (기본 개발): 실제 TCP/ASGI peer 127/8 또는 ::1만 변경 허용; `X-Forwarded-For` 위조로 권한 부여 불가. 로컬 정책을 **공개 프록시 뒤에서 사용해서는 안 된다**.
+3. `WRITE_POLICY=read_only`: 네 변경 경로 모두 `403 WRITE_DISABLED`; GET/health/readiness 유지.
+4. `WRITE_POLICY=token`: `Authorization: Bearer <strong_secret>` 서버 간 인증, 32+바이트·문자다양성 검사, 상수시간 비교, 실패 `401 AUTH_REQUIRED`. 비밀 토큰은 사용자 HTTP 응답·Git·캡처에 노출하지 않음.
+5. `PUBLIC_DEPLOYMENT=true`: 루프백 정책, SQLite, HTTP/wildcard CORS를 설정 시점에 fail-closed 거부. 관리형 PostgreSQL/명시적 HTTPS origin 및 read_only 또는 token 필수.
+6. Streamlit 공개/원격 환경은 등록·삭제 UI **read-only**. 서버에 Bearer token이 있다고 방문자 각각에게 쓰기 권한이 생기는 것이 아니므로, G7에서 사용자인증/권한과 남용 방어를 구현하기 전까지 공개 수정 허용 불가.
+
+### 28.2 요청 처리·정보노출 안전성
+
+- POST/PUT/PATCH 본문 Content-Length와 실제 streamed body를 둘 다 **16KiB 이하**로 제한; 초과 시 413 BODY_TOO_LARGE, 청크 전송도 우회하지 못하도록 테스트.
+- 요청 UUID 표준화, `X-Request-ID`/서버 내부 `X-Process-Time-Ms`, `Cache-Control=no-store`, `X-Content-Type-Options=nosniff`, `Referrer-Policy=no-referrer`.
+- 예외 응답은 코드·안전 문구·request ID만 노출, 처리되지 않은 예외는 내부 스택 대신 `500 INTERNAL_ERROR`. G3의 실패 시 원자적 리뷰 저장/실제 모델 대기 정책은 유지.
+- 변경 API POST에서 입력 크기 검사는 모델 추론 전 수행. ingress/WAF/레이트 리밋/분산 인증·감사기록은 실제 배포 준비인 G7 별도 항목.
+
+### 28.3 실제 검증의 범위와 한계
+
+| 검사 | 실측 결과 | 정확한 한계 |
+|---|---|---|
+| 전체 pytest | **81 PASS** (+3 subtests; Starlette deprecation warning 1) | 외부 penetration test 대체 아님 |
+| G6 Uvicorn 실제 HTTP | **5/5 checkpoints PASS**: read_only/토큰/비밀 비노출/본문 413 | loopback bind 임시 서버에서 수행 |
+| source-only clean-room | 새 프로젝트/새 venv fresh locked install → 컴파일/계약/Ruff/패키지 호환성/pytest/실제 G2 HTTP+UI 모두 PASS | G3 실모델은 모델 가중치 미복사로 clean-room NOT TESTED |
+| G2/G3 기존 서비스 기능 | 이후 최종 회귀 재실행 필요 | 가짜 모델 아닌 실제 G3 가중치로 원본 환경 검증 |
+| 의존성 | 86개 설치 패키지 호환성 PASS; 메타데이터 라이선스 검토 항목 psycopg 계열 2개 | CVE 외부 DB 검사·법률 자문·데이터 저작권 확인은 미수행 |
+| Git secrets/large binaries | 대표 비밀키 정규식 위반 없음, DB/모델/개별 NSMC raw data Git 제외 | 모든 가능한 비밀 누출을 자동 증명하지는 않음 |
+| GitHub-hosted CI | 워크플로에 G6 검사 명령 반영 | M18 remote 없음: **NOT TESTED**, formal exit OPEN |
+
+### 28.4 후속 의사결정
+
+- 공개 갤러리는 `PUBLIC_DEPLOYMENT=true`, `WRITE_POLICY=read_only`, `FRONTEND_READ_ONLY=true`, 영속 PostgreSQL, HTTPS에서만 시작한다.
+- 리뷰어의 공개 쓰기 시연이 필요하면 서버 간 토큰 공유가 아니라 **실제 방문자별 인증/권한, CSRF/남용방어, 요청량/비용제한, 데이터 reset/백업 운영 정책**을 별도 구현·검증해야 한다.
+- **G6 잔여 Gate:** M18 전용 GitHub 저장소의 가시성/권한 확인 후 연결·Push·실제 Actions 결과 PASS 확인. 사용자 승인 없이 새 GitHub remote/공개 호스팅 자원을 만들지 않았다.
+- **G7:** managed Postgres, API HTTPS 호스팅, Streamlit Cloud, 외부 browser E2E. **G8:** /docs 13-route 캡처, 3영화×각 10개 이상 실제 데이터, 보고서 PDF와 제출 폴더 확정.
+
+**중요:** G6 진행 중 모델 가중치·ONNX/NSMC 원문·기존 M13/M17은 변경하지 않았다. 검증 서버/DB는 소유된 격리 임시 자산에서만 사용한다.

@@ -7,6 +7,7 @@ from backend.app.db import get_db
 from backend.app.review_schemas import ReviewCreate, ReviewResponse
 from backend.app.review_services import create_review, delete_review, get_review, list_reviews
 from backend.app.schemas import ApiErrorEnvelope
+from backend.app.security import require_write_access
 from backend.app.sentiment import SentimentAnalyzer, get_analyzer
 
 router = APIRouter(tags=["Reviews"])
@@ -20,12 +21,18 @@ LOOKUP_ERRORS = {**BASE_ERRORS, 404: {"model": ApiErrorEnvelope}}
     status_code=status.HTTP_201_CREATED,
     summary="리뷰 등록 및 자동 감성분석",
     description="영화 확인→실제 감성분석→리뷰와 결과 원자적 저장. 추론 실패 시 저장 없음.",
-    responses={**LOOKUP_ERRORS, 409: {"model": ApiErrorEnvelope}},
+    responses={
+        **LOOKUP_ERRORS,
+        409: {"model": ApiErrorEnvelope},
+        401: {"model": ApiErrorEnvelope},
+        403: {"model": ApiErrorEnvelope},
+    },
 )
 def post_review(
     payload: ReviewCreate,
     db: Session = Depends(get_db),
     analyzer: SentimentAnalyzer | None = Depends(get_analyzer),
+    _access: None = Depends(require_write_access),
 ) -> ReviewResponse:
     return create_review(db, payload, analyzer)
 
@@ -90,8 +97,12 @@ def review_detail(review_id: int = Path(ge=1), db: Session = Depends(get_db)) ->
     status_code=status.HTTP_204_NO_CONTENT,
     summary="리뷰 삭제",
     description="리뷰 삭제 성공 시 본문 없는 HTTP 204를 반환합니다.",
-    responses=LOOKUP_ERRORS,
+    responses={**LOOKUP_ERRORS, 401: {"model": ApiErrorEnvelope}, 403: {"model": ApiErrorEnvelope}},
 )
-def remove_review(review_id: int = Path(ge=1), db: Session = Depends(get_db)) -> Response:
+def remove_review(
+    review_id: int = Path(ge=1),
+    db: Session = Depends(get_db),
+    _access: None = Depends(require_write_access),
+) -> Response:
     delete_review(db, review_id)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
