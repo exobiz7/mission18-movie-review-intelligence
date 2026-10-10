@@ -1,6 +1,6 @@
 # Mission 18 — Movie Review Sentiment Intelligence
 
-**Status (2026-10-10): G0–G4 LOCAL PASS. Streamlit 4-tab UX, offline/empty/error handling, real Chrome desktop/mobile screenshots, and a repeatable 3-movie ×12-review real-model demo are complete. G5–G8 pending.**
+**Status (2026-10-10): G0–G5 LOCAL PASS. 13 real backend APIs, G4 Chrome evidence, G5 2,000-review four-variant model benchmark and ONNX/INT8 experiment complete. INT8 is NOT approved for runtime due extreme positive-probability drift. G6–G8 pending.**
 
 Canonical local root: `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review`.
 
@@ -12,8 +12,8 @@ Implement the official **Streamlit + FastAPI** movie/review/sentiment applicatio
 
 - `frontend/` — G4 responsive cinema gallery and HTTP-only movie/review UI; CSS + safe UI formatting helpers
 - `backend/app/` — FastAPI with 13 actual routes, isolated SQLAlchemy transactions, verified real sentiment adapter
-- `scripts/` — G0/G1 checks, G2/G3 smokes, G4 local-only idempotent seed and real Chrome capture
-- `tests/` — 59 passing tests including G4 pure UI, escaped HTML, offline state, isolated-seed security
+- `scripts/` — G0/G1 checks, G2/G3 smokes, G4 browser demo, G5 pinned dataset, model benchmarking and ONNX/INT8 conversion
+- `tests/` — G0–G5 contract/API/DB/offline UI tests plus pure evidence-consistency checks (run `pytest -q` for current count)
 - `docs/` — architecture/contracts/decisions/evidence
 - `docs/RECONNAISSANCE.md` — **real host observations** and Phase 0 gate
 - `docs/ADR/0001-isolated-bootstrap.md` — bootstrap decision record
@@ -30,7 +30,7 @@ The three original premission guides and previous host recon update remain **unm
 - Dedicated local environment: `.venv` with **Python 3.12.14**, created using existing `uv` offline
 - Local Git repository: `main`; **no GitHub remote is configured**
 - Preferred ports (check availability before running): backend `8000`, Streamlit `8518`
-- Core+dev+optional ML dependencies installed in M18-only `.venv` (99-package uv.lock, including dev-only Playwright); model and persistent demo DB ignored by Git
+- Core+dev+optional `ml` and `benchmark` extras installed in isolated M18 `.venv` (109-package lock; includes dev-only Playwright); model, NSMC sources and demo DB are Git-ignored
 - FastAPI 0.143.0, SQLAlchemy 2.1.4, Streamlit 1.65.0, PyTorch 2.14.1 and transformers 4.57.6 verified; real Uvicorn + Streamlit + model E2E PASS
 
 To inspect the existing interpreter:
@@ -44,13 +44,13 @@ git status --short --branch
 
 ## Implementation boundary
 
-**Canonical design:** `MISSION18_DETAILED_DESIGN_IMPLEMENTATION_PLAN.md` (v1.6/G4 revision). All 13 backend API routes remain implemented. G4 UI and real-browser evidence: `docs/G4_ACCEPTANCE.md`, `docs/evidence/g4_manifest.json`.
+**Canonical design:** `MISSION18_DETAILED_DESIGN_IMPLEMENTATION_PLAN.md` (v1.7/G5 revision). G5 actual benchmark: `docs/MODEL_BENCHMARK.md`, `docs/G5_ACCEPTANCE.md`, `docs/evidence/g5_summary.json`. Production AI backend stays on verified original PyTorch.
 
 **Do not copy M13 model checkpoints or M17 direct-storage code into the M18 frontend.** The backend owns DB and inference; reuse patterns after license/contract verification.
 
 ## Next gate
 
-**Next: Phase 5/G5** — reproducible held-out model evaluation (macro-F1, precision, recall, calibration), CPU latency/memory/cold-start, and ONNX/INT8 optimization feasibility. G6–G8 hardening/deploy/report still pending.
+**Next: Phase 6/G6** — security and reproducibility hardening, offline clean-room checks, deployment-suitable write protection, dependency/license and error-path audits. G7 public cloud deployment and G8 final PDF/submission are pending.
 
 ## G1 local checks
 
@@ -134,3 +134,33 @@ uv sync --locked --extra ml --group dev
 The actual Chrome screenshots are stored in `docs/evidence/g4_gallery_desktop.png`, `g4_review_desktop.png`, `g4_recent_desktop.png`, `g4_gallery_mobile.png`. Desktop 1440×920 and mobile 390×844 were browser-checked. A complete submission PDF, public cloud demo and independent model holdout benchmark remain future gates.
 
 To explore the persistent demo by hand, start FastAPI using `DATABASE_URL=sqlite:///./.local/demo/movie_reviews.sqlite3` with the real G3 model environment from the commands above, then launch Streamlit on port 8518. **Do not publish unauthenticated movie/review mutations to the internet.**
+
+
+## G5 actual benchmark: verified NSMC split and quantized model probe
+
+G5 local report: `docs/MODEL_BENCHMARK.md`, `docs/G5_ACCEPTANCE.md`, `docs/evidence/g5_summary.json`. The report is generated from **measured** execution results and fixed source/sample SHA-256 checks. Test set: 2,000 NSMC published test reviews (positive/negative 1,000 each); TF-IDF baseline trained only on 20,000 original train reviews, with duplicate text exclusion.
+
+| Runtime | Macro F1 | Batch-1 CPU p50 / p95 | Model file |
+|---|---:|---:|---:|
+| TF-IDF + LogisticRegression | 82.55% | 0.158 / 0.217 ms | 1.31 MiB |
+| Actual PyTorch KoELECTRA | 89.65% | 2.809 / 4.569 ms | 53.90 MiB |
+| ONNX FP32 | 89.65% | 1.610 / 3.953 ms | 54.09 MiB |
+| ONNX dynamic INT8 | 89.15% | 1.592 / 4.853 ms | 13.98 MiB |
+
+**Runtime remains PyTorch:** ONNX INT8 is a technical conversion success (74% smaller), but shows up to **0.869 absolute P(positive) divergence** and p95 regression; it must **not** be deployed as a drop-in positivity-index replacement. The pretrained checkpoint's historical train/test separation is **not independently verified**, so its 89.65% is not guaranteed out-of-sample model generalization. Results are from one Mac Studio arm64 CPU run and are not production/cloud performance guarantees.
+
+Reproduce with **isolated benchmark dependencies** and no modifications to the G3 production service:
+
+```bash
+cd "/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review"
+uv sync --locked --extra ml --extra benchmark --group dev
+.venv/bin/python scripts/download_model.py
+.venv/bin/python scripts/benchmark_data.py
+.venv/bin/python scripts/benchmark_export_onnx.py
+for variant in tfidf torch onnx_fp32 onnx_int8; do
+  .venv/bin/python scripts/benchmark_worker.py --variant "$variant"
+done
+.venv/bin/python scripts/benchmark_report.py
+```
+
+**Data and license boundaries:** Original NSMC README does not specify a license, whereas the HF mirror labels CC-BY-2.0 and older metadata differs. Original review text, per-item predictions and ONNX binaries are confined to Git-ignored `.local/benchmark/`; only aggregate evidence and reusable benchmark scripts are committed. Review source rights before any public redistribution.

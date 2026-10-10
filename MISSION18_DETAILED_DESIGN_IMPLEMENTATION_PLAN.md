@@ -1,19 +1,19 @@
 # MISSION 18 — 상세설계 및 구현개발 실행계획서
-> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.6 — G4 Responsive UI and Real Browser Evidence Verified**
+> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.7 — G5 Empirical Model Quality & ONNX/INT8 Trial Verified**
 
 | 항목 | 내용 |
 |---|---|
 | 작성 기준일 | 2026-10-10 (Asia/Seoul) |
-| 문서 상태 | **G0–G4 LOCAL PASS — FastAPI/Streamlit/movie/review/real AI model and responsive UI verified**. 13 real APIs, 59 pytest PASS, G3 real model smoke 11 checks PASS, G4 Chrome+API 9 checks PASS, 3 movies ×12 reviews and 4 real browser screenshots. G5–G8 pending |
+| 문서 상태 | **G0–G5 LOCAL PASS — full app, responsive UI and independent-baseline model benchmarking verified**. 13 real APIs, G4 Chrome9 checks PASS, G5 20K baseline training / 2K fixed NSMC test, PyTorch/ONNX/INT8 4-variant comparison, macro F1 PyTorch 89.65%, ONNX FP32 parity, INT8 production gate FAIL. G6–G8 pending |
 | 대상 미션 | Codeit AI Engineering Sprint Mission 18 |
 | 지정 프로젝트 루트 | `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review` |
 | 제출 경로 | `미션18/{팀명}_{이름}/` (실제 값 미제공: 제출 패키징 시 확정) |
 | 공식 프론트엔드 / 백엔드 | Streamlit / FastAPI |
 | 목표 | 채점 적합성, 포트폴리오 설득력, 실제 재현성, 장기 재사용 가능한 리뷰/VOC AI 자산 |
-| 본 문서의 범위 | **상세설계 및 진행현황 기준본**. G4 UI/UX·반응형 브라우저 점검·멱등 데모 시드·실측 스크린샷까지의 구현/검증 근거 포함. G5 실제 평가/경량화, G6 보안, G7 클라우드, G8 최종 PDF·제출은 미완료 |
+| 본 문서의 범위 | **상세설계 및 진행현황 기준본**. G5 모델 검증·CPU 성능계측·ONNX FP32 및 동적 INT8 실측까지 기록. G6 보안/재현성, G7 공개 클라우드, G8 보고서/PDF 최종 제출은 미완료 |
 | 기준 우선순위 | ① 사용자 제공 미션 원문 ② 사용자 제공 사전 문서 3종 ③ 명시적으로 검증한 공식 외부 자료 ④ 이 문서에서 새로 제안한 설계 |
-| 기술 리스크 | 지정 루트 FULL_HOST 접근 확인. 로컬 Git 및 Python 3.12.14 격리. Movie/Review API와 실제 고정 KoELECTRA 모델의 로컬 E2E 검증 완료. 대표 독립 데이터셋의 정확도/교정, 공개 클라우드 배포 및 최종 제출 PDF는 아직 미검증 (G4 증빙 이미지는 일부 확보) |
-| GitHub 현황 | 연결된 GitHub `exobiz7` 확인. M18 전용 remote 없음; G0–G4 변경은 로컬 `main`에서 버전 관리하며 GitHub 생성/푸시 및 CI 실환경 실행은 미수행 |
+| 기술 리스크 | 지정 루트 FULL_HOST 접근 확인. 로컬 Git 및 Python 3.12.14 격리. Movie/Review API와 실제 고정 KoELECTRA 모델의 로컬 E2E 검증 완료. NSMC 공개 test에서 2,000건 실측 완료. 단, 외부 사전학습 모델의 데이터 분리/누출은 독립 검증하지 못했고 교정/OOD 일반화 보장은 없음. 공개 클라우드와 PDF 미완료 |
+| GitHub 현황 | 연결된 GitHub `exobiz7` 확인. M18 전용 remote 없음; G0–G5 로컬 `main` 버전 관리. GitHub 생성/푸시 및 CI 실환경 실행은 미수행 |
 | 사용자 승인이 필요한 사실 | 제출용 정확한 `{팀명}_{이름}`, 실제 배포 서비스/계정·지출 승인, 기존 로컬 저장소와의 충돌 여부 |
 
 ---
@@ -1590,3 +1590,41 @@ Environment: `uv.lock` resolved 96 packages including optional `ml` group; local
 ### 26.4 이어서 수행할 작업
 
 **G5 — 동일 조건에서 분리된 데이터의 실제 영화 감성 모델 정확도, macro-F1, precision/recall, latency p50/p95, peak RSS, cold start, 모델 크기를 측정하고 최소 하나의 ONNX/INT8 또는 경량화 프로브를 수행.** 추정/카드 수치와 실험 관찰 수치를 명확히 분리한 `MODEL_BENCHMARK.md`를 작성한다. G6–G8은 인증/보안, 영속 배포, PDF/제출의 별도 승인 단계이다.
+
+
+---
+
+## 27. Phase 5 / G5 실제 모델 비교·경량화 실험과 채택 결정 (v1.7, 2026-10-10)
+
+**G5 로컬 실측 PASS.** 원본 NSMC train/test 파일 해시 확인 후 TF-IDF 기준선 train 20,000건(긍·부정 10,000건씩), original NSMC test 평가 표본 2,000건(1,000건씩)을 시드 1805로 고정했다. 원본 train/test의 정확히 일치하는 문자열 교집합 796건을 학습 후보에서 제외했다. 사전학습 KoELECTRA 체크포인트가 어떤 NSMC 데이터를 사용했는지는 독립 확인되지 않으므로 **본 프로젝트 기준선의 train/test 독립성만 보장**, 체크포인트의 외부 OOD 일반화는 미검증으로 표시한다.
+
+### 27.1 네 실측 변형과 판정
+
+| 실행 경로 | Accuracy | Macro F1 | 단건 p50/p95 | 모델 파일 | 판정 |
+|---|---:|---:|---:|---:|---|
+| TF-IDF char 2–4 + LogisticRegression (새로 학습) | 82.55% | 82.55% | 0.158 / 0.217 ms | 1.31 MiB | 비교 기준선 PASS |
+| 고정 KoELECTRA PyTorch FP32 (현재 서비스) | 89.65% | 89.65% | 2.809 / 4.569 ms | 53.90 MiB | **서비스 유지** |
+| 같은 모델 ONNX Runtime FP32 CPU | 89.65% | 89.65% | 1.610 / 3.953 ms | 54.09 MiB | 변환 및 평가 PASS, 배포 미전환 |
+| 같은 모델 ONNX dynamic INT8 CPU | 89.15% | 89.15% | 1.592 / 4.853 ms | 13.98 MiB | 변환 성공, **운영 후보 게이트 FAIL** |
+
+- 공통 조건: arm64 Mac Studio, CPU thread 2, batch 1, warmup 10, 2,000개 단건 텍스트의 토큰화/벡터화 포함 측정. 각 후보 독립 워커 프로세스, RSS 20ms 간격 근사 최대치. 1회 실측은 클라우드/타 머신 보장치 아님.
+- ONNX FP32는 PyTorch와 2,000건 전체 분류 결과 동일, 긍정 확률 최대 오차 0.0000145.
+- INT8 가중치 용량 **74.06% 감소**, 그러나 20/2,000건 분류 반전, 최대 **P(positive) 차이 0.8693** 및 p95 증가. 영화별 positive probability를 그대로 평균하는 과제이므로 macro F1이 -0.50pp로 근접해도 운영 채택 불가. 재보정·원인 분석/배포 환경 검증 후 다시 결정.
+- PyTorch ECE10 약 0.0812, Brier 0.0921로 현재 모델의 확률 보정이 확인된 것이 아니다. 긍정 지수는 사용자 별점/교정된 만족도와 다르다.
+- 모델 파일 크기는 토크나이저/런타임/컨테이너 제외. cold_load_or_train은 TF-IDF 재학습 시간을 포함해 다른 모델 초기 로드 시간과 동일 의미가 아님.
+- 모델 저장소는 MIT로 표시되지만 NSMC 데이터셋은 원본 GitHub README의 공란 라이선스, Hugging Face 미러의 CC-BY-2.0, 일부 과거 CC0 등 메타데이터가 일치하지 않는다. 라이선스를 자의적으로 하나로 확정하지 않고 **원문을 Git에서 제외**.
+
+### 27.2 구현 파일, 검증 및 운영 전제
+
+- 신규 `scripts/benchmark_data.py`: 원본 NSMC SHA 확인, train/test 중복 제거, 난수 시드/학습/시험 표본 고정.
+- 신규 `scripts/benchmark_worker.py`: TF-IDF 학습 및 네 후보 단건 CPU 추론/정확도/F1/PR/AUC/Brier/ECE/p50/p95/프로세스 RSS.
+- 신규 `scripts/benchmark_export_onnx.py`: PyTorch → ONNX FP32 opset17 → ORT Dynamic QInt8, 출력 parity 검증. Legacy exporter가 submodule 평가모드 상태를 변경한 초기 오류를 수사/수정하고 통과했으며, 허용 오차를 늘려 통과시키지 않았음.
+- 신규 `scripts/benchmark_report.py`: 측정 결과 및 메트릭/파일 SHA를 교차검증 후 `docs/MODEL_BENCHMARK.md`와 `docs/evidence/g5_summary.json` 생성.
+- 추가 `tests/test_g5_benchmark_contract.py`: 순수 표본 선택/신뢰구간 산식, 기계식 집계/운영 INT8 거부 판정 검증. 기존 G2/G3/G4 서버 서비스는 변경하지 않음.
+- 원본 리뷰, 2,000건 상세 예측, ONNX 바이너리와 baseline 파일은 `.local/benchmark/` Git 제외. 집계 값/재현 스크립트/문서만 Git 기록.
+
+**G5 Gate:** 품질·속도·메모리·용량 실측, 실제 ONNX FP32 변환, INT8 정량 손익·거부 근거 기록 완료. 다종 사전학습 모델 추가 비교, OOD robustness, calibration 보정 및 x86 클라우드 성능검증은 향후 확장/G6–G7에서 다룬다.
+
+**다음 Phase 6 / G6:** 인증 없는 공개 변경 API 차단, clean-room 환경 재현, CI/보안/입력/과금 검증, 실패 복구/영속 DB/모델 cold start 점검. G7은 공개 배포, G8은 최종 13-route `/docs`와 3영화×각10리뷰 캡처·PDF·제출 패키지.
+
+상세 실험 결과와 검증 조건의 정본은 `docs/MODEL_BENCHMARK.md`, `docs/G5_ACCEPTANCE.md`, `docs/ADR/0006-g5-model-comparison-and-int8-rejection.md`, `docs/evidence/g5_summary.json`을 참조한다.

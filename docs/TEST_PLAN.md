@@ -1,6 +1,6 @@
 # Mission 18 — Test Plan and Acceptance Matrix (G1 v1.0)
 
-**Historical G1 plan; updated verification status:** G2/G3 implemented with local tests and real-model E2E by 2026-10-10. **46 pytest PASS + 11 G3 live checks PASS**; G4/G5/G6/G7/G8 not completed. Source of truth: course mission, three premission guides, `contracts/api_contract.json`, `docs/API_CONTRACT.md`, `docs/ERD.md`, `docs/SENTIMENT_CONTRACT.md`.
+**Historical G1 plan; verified G0–G5 status (2026-10-10):** G2 movie service, G3 real-model E2E, G4 actual Chrome views and reproducible 3×12 seed, G5 2K-sample model benchmark + ONNX FP32/INT8 experiment PASS. Int8 operational approval FAIL due severe per-case probability drift. G6/G7/G8 not completed. Source of truth: course mission, three premission guides, `contracts/api_contract.json`, `docs/API_CONTRACT.md`, `docs/ERD.md`, `docs/SENTIMENT_CONTRACT.md`.
 
 ## 1. Evidence tiers
 
@@ -92,7 +92,7 @@ Use synthesized demo reviews only for screenshots, **never claim synthetic demo 
 - **G2:** movie API + minimal Streamlit flow, persistence + actual HTTP tested.
 - **G3:** review API + actual model adapter + inference/aggregate/rollback.
 - **G4:** full Streamlit functionality incl. recent 10 and recovery UX.
-- **G5:** actual model comparison and optimization experiment.
+- **G5:** actual two-classifier/four-variant NSMC 2K model benchmark and dynamic INT8 experiment **DONE**; see `docs/MODEL_BENCHMARK.md`.
 - **G6:** deterministic tests, security and regression, evidence capture scripts.
 - **G7:** persistent public cloud demo with controlled mutation path.
 - **G8:** final screenshots, PDF, archive and submission audit.

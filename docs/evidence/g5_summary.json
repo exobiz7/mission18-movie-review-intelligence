@@ -1,0 +1,93 @@
+{
+  "status": "PASS",
+  "gate": "G5",
+  "created_at_utc": "2026-10-10T05:21:09.995804+00:00",
+  "host_arch": "arm64",
+  "source_checksums_verified": {
+    "ratings_train.txt": "e03b7d14e9e41be8d464a28057cd25d7396c53e67aa7fd5f7e552c59b0ee2940",
+    "ratings_test.txt": "8ac9f64052f11dbf6ae0acb5e038f03d90a76f0eda7820cfb3a92d02edfcebda"
+  },
+  "dataset_sha256": {
+    "train_sample.json": "04a9e42893bf06b4cf821b02e6e82a1b5d793239aaa1cb55c57ff511e716c316",
+    "eval_sample.json": "6587d1d025ae4c0a53a3f3371940f7f82b745c0bb050ed9e923bcab0c82f4add"
+  },
+  "rows": {
+    "baseline_train": 20000,
+    "common_test": 2000
+  },
+  "models": {
+    "tfidf": {
+      "model_bytes": 1375227,
+      "accuracy": 0.8255,
+      "macro_f1": 0.8254524794375269,
+      "brier": 0.12186516581482597,
+      "ece_10": 0.06358113279866569,
+      "p50_ms": 0.158,
+      "p95_ms": 0.2167,
+      "peak_rss_mb": 401.83,
+      "cold_load_or_train_ms": 4507.74,
+      "result_json_sha256": "572c34ae04df9bb10eb1b12620165a886271405fd2a86617a526d0dbca30b317"
+    },
+    "torch": {
+      "model_bytes": 56518128,
+      "accuracy": 0.8965,
+      "macro_f1": 0.896499767124476,
+      "brier": 0.09205398179339108,
+      "ece_10": 0.0812033324788499,
+      "p50_ms": 2.8089,
+      "p95_ms": 4.569,
+      "peak_rss_mb": 493.95,
+      "cold_load_or_train_ms": 3061.22,
+      "result_json_sha256": "8ad16b9a723b37af2a9ac79114e1991dedaa15db769fc3280a30ca311bb269c6"
+    },
+    "onnx_fp32": {
+      "model_bytes": 56713340,
+      "accuracy": 0.8965,
+      "macro_f1": 0.896499767124476,
+      "brier": 0.09205399649570578,
+      "ece_10": 0.08120333334569019,
+      "p50_ms": 1.6099,
+      "p95_ms": 3.9527,
+      "peak_rss_mb": 532.11,
+      "cold_load_or_train_ms": 2561.3,
+      "result_json_sha256": "af732381caea1eece81ce6207e15a97c5028ea01608f5a3cec7981c34c598dcc"
+    },
+    "onnx_int8": {
+      "model_bytes": 14663007,
+      "accuracy": 0.8915,
+      "macro_f1": 0.8914997558744507,
+      "brier": 0.0970545057270453,
+      "ece_10": 0.08726155670423191,
+      "p50_ms": 1.5922,
+      "p95_ms": 4.8526,
+      "peak_rss_mb": 483.36,
+      "cold_load_or_train_ms": 2758.38,
+      "result_json_sha256": "17f9f7abf736ab6f945da2585762c2cf88cb792b1c224e61594e84c935b237b7"
+    }
+  },
+  "onnx_comparison": {
+    "onnx_fp32": {
+      "prediction_disagreement_count": 0,
+      "probability_max_absolute_difference": 1.448e-05,
+      "probability_mean_absolute_difference": 2.3e-07,
+      "macro_f1_delta_pp_from_torch": 0.0
+    },
+    "onnx_int8": {
+      "prediction_disagreement_count": 20,
+      "probability_max_absolute_difference": 0.86934668,
+      "probability_mean_absolute_difference": 0.01506972,
+      "macro_f1_delta_pp_from_torch": -0.5
+    }
+  },
+  "int8_weight_size_reduction_percent_vs_torch": 74.056,
+  "int8_eligible_for_further_consideration": false,
+  "int8_p95_faster_than_torch": false,
+  "production_model_unchanged": true,
+  "risks": [
+    "Published NSMC test split is independent of our baseline training; pretraining of the pinned model is not independently audited.",
+    "Public NSMC licensing metadata differs between Hugging Face mirror and original README; raw dataset not redistributed.",
+    "This is one local CPU run with 2 threads and 2000 examples, not an industry-wide benchmark.",
+    "Model confidence/P(positive) is uncalibrated; brier/ECE reflect quality on this one subset only.",
+    "Baseline trained on 20k examples, checkpoint may have seen far more data; training-budget parity not established."
+  ]
+}

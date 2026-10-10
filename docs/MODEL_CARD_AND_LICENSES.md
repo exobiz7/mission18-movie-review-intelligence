@@ -1,7 +1,7 @@
 # Mission 18 — Pinned Korean Movie Sentiment Model Card and Rights Log
 
 - Recorded: 2026-10-10 (Asia/Seoul)
-- Status: **Real checkpoint downloaded, SHA-256 and inference contract verified locally**; broad holdout accuracy/calibration/latency comparison **not yet measured** (G5)
+- Status: **G3 checkpoint and immutable SHA verified, G5 local 2,000-example NSMC test-split benchmark measured.** F1 0.8965 on this selected subset; no upstream model training provenance audit, no out-of-domain guarantee. See `docs/MODEL_BENCHMARK.md`.
 - Selected model ID: `daekeun-ml/koelectra-small-v3-nsmc`
 - Immutable git revision: `d1c0233fc013ae8bd879d7b61f2bec69aa3af4c9`
 - Weights: `model.safetensors`, SHA-256 `012a5926dcfe2d0b1caf17ef79963097838f693ce12fad2a27d8802bd3fdec28`
@@ -16,9 +16,9 @@ Pinned weights: https://huggingface.co/daekeun-ml/koelectra-small-v3-nsmc/blob/m
 Model API metadata: https://huggingface.co/api/models/daekeun-ml/koelectra-small-v3-nsmc
 
 - Public model card and HF API expose **`license: mit`** for the model repository, observed at verification time.
-- The training-related **NSMC dataset** is separately described under **CC-BY-2.0** at https://huggingface.co/datasets/e9t/nsmc; do not equate the *model weights* MIT tag with licensing of raw review text or downstream redistribution of training data. Respect original notices and attribution.
+- HF's NSMC dataset mirror is labeled **CC-BY-2.0** at https://huggingface.co/datasets/e9t/nsmc; however original https://github.com/e9t/nsmc README has an **empty License heading**, and some historical dataset metadata lists CC0. **Do not silently reconcile contradictory license declarations or redistribute raw review text before reviewing rights and attribution.** Model weights' MIT tag is not a dataset license.
 - Backend uses local `safetensors` files only, no remote Python execution (`trust_remote_code=False`), `HF_HUB_OFFLINE` may be set to prevent unexpected network access at inference.
-- This project does **not** redistribute raw NSMC training data or any proprietary reviews. The G3 smoke reviews are synthetic fixture sentences for functionality and are not claimed as a representative benchmark.
+- This project does **not** redistribute raw NSMC training/test data or proprietary reviews. The G3/G4 smoke reviews are synthetic fixture sentences; G5 instead evaluates a separately downloaded **official NSMC test subset (2,000 reviews)** under ignored local artifacts only. The pretrained checkpoint's original train/eval separation cannot be independently established.
 - Public/production release should preserve model attribution and dependency/license notices, and review any third-party/underlying model restrictions; this document is engineering verification, not legal advice.
 
 ## 2. Class semantics: real measured direction
@@ -64,10 +64,10 @@ DATABASE_URL=sqlite:///./.local/movie.db \
 
 `/readiness` is **200** only when database and actual model are ready; if the model is missing, corrupted, wrong revision or fails sanity, the service fails closed with 503 and never writes invented predictions. Test fakes are only injected via test dependency overrides.
 
-## 4. Known limitations / G5 TODO
+## 4. G5 measured performance and remaining limitations
 
-- Actual held-out NSMC or independently licensed Korean film-review sample split not yet evaluated with F1, precision/recall, ECE, calibration, drift, fairness, or robust out-of-domain input tests.
-- Cold start, memory peak, CPU p50/p95 and optional ONNX INT8 comparisons are **G5** work, not proven by a 4ms single-inference sample.
+- **G5 completed:** original NSMC published test split 2,000-example fixed subset, Accuracy 89.65%, macro-F1 89.65%, Brier 0.0921, ECE10 0.0812; see `MODEL_BENCHMARK.md`. The third-party checkpoint's upstream train/test separation is independently **unverified**. Domain shift, fairness, robustness and truly fresh out-of-domain evaluation remain open.
+- **G5 completed:** single-worker sampled RSS, local cold model load, CPU batch-1 p50/p95, ONNX FP32 and ONNX dynamic INT8 trial measured. INT8 model size reduced ~74% but maximum P(positive) error 0.869 and p95 performance regressed; thus **NOT approved for production**. Deployment end-to-end cold start remains unmeasured.
 - Model semantic provenance and original training data disclosures should be reviewed again for public distribution.
 - Mixed model revisions are stored per review, but the aggregate does not correct calibration differences across revisions.
 - Local `.local` weights are ignored by Git; a deployed backend needs explicit pinned model provisioning during build or startup plus persistent DB.
