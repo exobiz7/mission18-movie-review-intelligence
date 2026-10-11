@@ -1,0 +1,4 @@
+# Community Cloud entrypoint-local dependencies; backend/torch/DB intentionally excluded.
+# Streamlit Community Cloud chooses frontend/requirements.txt ahead of root uv.lock.
+streamlit==1.65.0
+httpx==0.28.1

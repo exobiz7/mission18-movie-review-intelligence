@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "recorded_at_utc": "2026-10-11T05:31:23.809818+00:00",
+  "checks": {
+    "isolated_postgres_loopback_ready": true,
+    "alembic_postgres_migration": true,
+    "postgres_3_movies_36_model_reviews_and_seed_idempotence": true,
+    "postgres_aggregate_and_recent_ten": true,
+    "restart_persists_postgres_and_readonly_denies_writes": true
+  },
+  "database": "temporary Docker Postgres 16, TCP loopback-only; removed after test",
+  "backend": "real KoELECTRA pinned weights; generated synthetic 3x12 reviews",
+  "request_mode": "PUBLIC_DEPLOYMENT true; token for seeding; read_only on restart",
+  "credential_exposure": "ephemeral credentials never persisted or printed",
+  "no_external_cloud_provisioned": true,
+  "elapsed_seconds": 10.48
+}

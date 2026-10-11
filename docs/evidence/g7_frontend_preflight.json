@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "recorded_at_utc": "2026-10-11T05:28:37.348857+00:00",
+  "entrypoint": "frontend/app.py",
+  "package_config": "frontend/requirements.txt",
+  "requirements_sha256": "49058b0a192febf65ba0df3c3c9bcaca3bdd926c38112dacbf17e0586fc9d985",
+  "isolated_package_count": 37,
+  "frontend_offline_read_only": true,
+  "backend_ml_packages_absent": true,
+  "temporary_source_and_env_cleaned": true,
+  "cloud_deployment_status": "NOT TESTED",
+  "scope": "source-only clean frontend; public cloud provider not accessed"
+}

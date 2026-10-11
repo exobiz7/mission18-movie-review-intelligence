@@ -1,19 +1,19 @@
 # MISSION 18 — 상세설계 및 구현개발 실행계획서
-> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.8 — G6 Local Security & Clean-room Hardened; Remote CI Pending**
+> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.9 — G6 Hosted CI Blocked, G7 Local Cloud Preflight PASS**
 
 | 항목 | 내용 |
 |---|---|
-| 작성 기준일 | 2026-10-10 (Asia/Seoul) |
-| 문서 상태 | **G0–G5 LOCAL PASS; G6 LOCAL SECURITY/REPRODUCIBILITY PASS, remote CI UNVERIFIED**. 13 real APIs, G5 benchmark and ONNX/INT8 verified; G6 81 tests, 5 real write-policy smoke checks, source-only cleanroom fresh-install/real G2 HTTP UI PASS. Formal G6 hosted GitHub Actions exit criterion remains OPEN. G7/G8 pending |
+| 작성 기준일 | 2026-10-11 (Asia/Seoul) |
+| 문서 상태 | **G0–G5 LOCAL PASS; G6 local PASS but GitHub-hosted CI BLOCKED by account billing (runner steps 0); G7 local predeploy PASS, public HTTPS hosting NOT STARTED**. Dedicated private GitHub repo pushed, frontend-only 37-package install and PostgreSQL 16 + Alembic + actual model 3×12, 5/5 checks. G8 pending |
 | 대상 미션 | Codeit AI Engineering Sprint Mission 18 |
 | 지정 프로젝트 루트 | `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review` |
 | 제출 경로 | `미션18/{팀명}_{이름}/` (실제 값 미제공: 제출 패키징 시 확정) |
 | 공식 프론트엔드 / 백엔드 | Streamlit / FastAPI |
 | 목표 | 채점 적합성, 포트폴리오 설득력, 실제 재현성, 장기 재사용 가능한 리뷰/VOC AI 자산 |
-| 본 문서의 범위 | **상세설계 및 진행현황 기준본**. G6 승인된 로컬 보안설계(읽기 전용/서버 간 토큰/루프백), FastAPI 오류 및 요청 크기 보호, 공개 Streamlit 쓰기 차단, clean-room 의존성 재설치·회귀검증 기록. GitHub Actions 실환경 확인·G7 공개배포·G8 PDF는 미완료 |
+| 본 문서의 범위 | **상세설계 및 진행현황 기준본**. G6 승인된 로컬 보안설계(읽기 전용/서버 간 토큰/루프백), FastAPI 오류 및 요청 크기 보호, 공개 Streamlit 쓰기 차단, clean-room 의존성 재설치·회귀검증 기록. GitHub Actions 초기 실행이 GitHub billing으로 시작 전 차단. G7 프론트/DB 재현은 로컬 PASS, 공개 HTTPS 서비스와 G8 PDF 미완료 |
 | 기준 우선순위 | ① 사용자 제공 미션 원문 ② 사용자 제공 사전 문서 3종 ③ 명시적으로 검증한 공식 외부 자료 ④ 이 문서에서 새로 제안한 설계 |
 | 기술 리스크 | 지정 루트 FULL_HOST 접근 확인. 로컬 Git 및 Python 3.12.14 격리. Movie/Review API와 실제 고정 KoELECTRA 모델의 로컬 E2E 검증 완료. NSMC 공개 test에서 2,000건 실측 완료. 단, 외부 사전학습 모델의 데이터 분리/누출은 독립 검증하지 못했고 교정/OOD 일반화 보장은 없음. 공개 클라우드와 PDF 미완료 |
-| GitHub 현황 | 연결된 GitHub `exobiz7` 확인. M18 전용 remote 없음; G0–G6 로컬 `main` 버전 관리. GitHub 생성/푸시 및 CI 실환경 실행은 아직 미수행 |
+| GitHub 현황 | M18 private GitHub `exobiz7/mission18-movie-review-intelligence` 생성 후 `origin/main` SHA 7b399445 정상 푸시. Actions run 38114719687은 계정 결제/한도 오류로 runner 시작 전 실패(테스트 0건) |
 | 사용자 승인이 필요한 사실 | 제출용 정확한 `{팀명}_{이름}`, 실제 배포 서비스/계정·지출 승인, 기존 로컬 저장소와의 충돌 여부 |
 
 ---
@@ -1672,3 +1672,44 @@ Environment: `uv.lock` resolved 96 packages including optional `ml` group; local
 - **G7:** managed Postgres, API HTTPS 호스팅, Streamlit Cloud, 외부 browser E2E. **G8:** /docs 13-route 캡처, 3영화×각 10개 이상 실제 데이터, 보고서 PDF와 제출 폴더 확정.
 
 **중요:** G6 진행 중 모델 가중치·ONNX/NSMC 원문·기존 M13/M17은 변경하지 않았다. 검증 서버/DB는 소유된 격리 임시 자산에서만 사용한다.
+
+
+---
+
+## 29. GitHub private remote/CI blocker & G7 local deployment preflight (v1.9, 2026-10-11)
+
+### 29.1 GitHub-hosted CI: 실제 실패가 아닌 계정 사용제한
+
+- `exobiz7/mission18-movie-review-intelligence` **PRIVATE** GitHub 저장소 생성 및 일반 `main` 푸시 완료 (최초 7b399445facf5ae828b6014454877ee991c13e6d, no force).
+- GitHub Actions `38114719687` / `contract-and-lint` 작업은 결제 제한: “The job was not started because recent account payments have failed or your spending limit needs to be increased.” **실행 step 0 / runner_name 공란**, 후속 pinned-model job skipped. 소스 테스트 실패를 의미하지 않음.
+- GitHub의 Actions 설정 enabled/allowed=all. 계정 결제·지출한도는 사용자가 직접 승인해야 함. 일반 목적 Mac Studio에 보안격리 없는 GitHub self-hosted runner 자동 설치 금지.
+- 정본: `docs/G6_GITHUB_ACTIONS_VERIFICATION.md`. 원 계획 G6 Hosted CI Exit Gate는 **BLOCKED**.
+
+### 29.2 G7 별도 클라우드 사전검증 — 실제 로컬 실행
+
+| 작업 | 판정 |
+|---|---|
+| Streamlit Cloud 엔트리포인트별 `frontend/requirements.txt` 설치 | **PASS**: 새 Python 환경 37 packages, torch/ORM/DB 없음, 오프라인 read-only AppTest 정상 |
+| Docker `postgres:16-alpine` 루프백 임시 인스턴스 | **PASS**: 유일한 M18 컨테이너, 기존 컨테이너 보존 |
+| PostgreSQL schema Alembic revision/표 조회 | **PASS** |
+| 임시 관리자 토큰, 실제 KoELECTRA + PostgreSQL 3 영화 ×12 리뷰 | **PASS**: 36건 모델 분석/집계/최근10, 재시드 신규 0 |
+| API 정지 후 동일 PostgreSQL에 read_only로 재연결 | **PASS**: 영화/리뷰 유지, 무인증 POST 403 |
+| 임시 Postgres/Uvicorn cleanup | **PASS**, 테스트 자산 삭제 |
+| 실제 Neon/Render/Streamlit HTTPS | **NOT TESTED** — 외부 서비스 미생성, 비용 승인 없음 |
+
+증빙: `docs/evidence/g7_frontend_preflight.json`, `docs/evidence/g7_local_postgres_preflight.json`; 재실행 `scripts/preflight_g7_frontend.py`, `scripts/preflight_g7_postgres.py`. G6 local read_only/token, G3 real model 기존 API는 변경하지 않음.
+
+### 29.3 호스팅 결정을 위한 신선한 공식 제약
+
+- Streamlit Community Cloud는 private GitHub repo의 추가 OAuth 권한이 필요하고 entrypoint-local frontend/requirements.txt를 우선 사용; 비공개 repo 앱은 기본 비공개, 평가자 접근 공개는 별도 사용자 승인 필요.
+- Neon은 2026-10-02 공식 공지 기준 무료 플랜 DB 프로젝트당 1GB 저장 옵션. 별도 M18 DB로만 프로비저닝하고 TLS 비밀 URL 안전 보관 필요.
+- Render free 웹 서버 `0.1 CPU / 512MB`는 PyTorch local worker RSS 약 494MB 대비 운영 여유 부족/실패 위험. Render `1c-2g` 2GB는 당시 약 $25/month 유료 후보, 승인 없이 생성하지 않음. Render 무료 PostgreSQL은 30일 만료이므로 영속 DB로 부적합. Hugging Face Docker Space 신규 생성을 무료 fallback으로 단정하면 안 됨(유료 자격 필요).
+- 모든 서비스는 `PUBLIC_DEPLOYMENT=true`, backend `WRITE_POLICY=read_only`, Streamlit `FRONTEND_READ_ONLY=true`; **공개 쓰기 요구는 별도 방문자 인증/남용방지 없이는 미충족**. 호스팅에서의 x86 cold start/메모리, database backup, HTTPS E2E 전부 **미검증**.
+- 정본: `docs/G7_PREDEPLOY_READINESS.md`. G7 Hosted Exit Gate와 G8 PDF/submission은 여전히 OPEN.
+
+### 29.4 다음 차단 해제
+
+1. GitHub Billing & plans 결제/Actions 사용가능 상태 확인 → Hosted run retry 후 실제 단계별 PASS 확인.
+2. 사용자의 Neon/Render 계정 연결 및 서비스 비용·메모리 plan 승인. 비공개 GitHub source에 대한 Streamlit/Render 권한 부여.
+3. 관리형 DB에서 Alembic migration → 임시 비공개 token으로 synthetic 3×12 seed → 공개 backend read_only 전환 → 실제 Streamlit app private/public 가시성 결정 후 HTTPS E2E.
+4. 공개 UI의 익명 리뷰 생성 기능이 평가 필수이면 별도 per-user 인증 또는 격리 demo-write 설계를 먼저 승인하고 구현. 일반 비밀 서버 토큰을 모든 방문자에게 위임하는 방식 불가.

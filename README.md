@@ -1,6 +1,6 @@
 # Mission 18 — Movie Review Sentiment Intelligence
 
-**Status (2026-10-10): G0–G5 LOCAL PASS; G6 LOCAL SECURITY AND CLEAN-ROOM PASS, HOSTED GITHUB CI STILL UNVERIFIED. 13 contracted APIs, read-only/token/loopback write access, request limits, safe errors, isolated fresh install and real HTTP checks. G7/G8 pending.**
+**Status (2026-10-11): G0–G5 LOCAL PASS; G6 local security PASS but GitHub-hosted CI BLOCKED by account billing before runner startup; G7 cloud PREDEPLOY LOCAL PASS (isolated Streamlit 37-package install + actual PostgreSQL/KoELECTRA 3 movies × 12 reviews + readonly restart). No public backend, database or Streamlit app has been deployed. G8 pending.**
 
 Canonical local root: `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review`.
 
@@ -50,7 +50,7 @@ git status --short --branch
 
 ## Next gate
 
-**Next: G6 hosted CI verification (requires a deliberate M18 GitHub remote), then G7 persistent HTTPS public deployment and G8 PDF/submission.** Until actual external CI passes, do not claim full G6 exit gate despite local PASS.
+**Next: resolve GitHub Actions account billing authorization, connect deployment providers, obtain hosting plan/visibility approval, then execute G7 HTTPS hosted E2E and G8 PDF/submission.** A dedicated private GitHub repo now exists; hosted CI remains blocked by GitHub before any test step.
 
 ## G1 local checks
 
@@ -187,3 +187,23 @@ cd "/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review"
 Clean-room validation copies source without `.git`, `.venv`, `.local`, secrets, model weights or user databases; installs dependencies in a new virtualenv; executes contract, package integrity, Ruff, tests and actual G2 HTTP+UI smoke. Actual G3 model is checked independently in the existing M18 environment.
 
 **GitHub Actions is authored but not run** because this M18 project has no dedicated GitHub remote. No repository was created or pushed automatically.
+
+
+## G6 remote CI and G7 local cloud-predeployment milestones (2026-10-11)
+
+**Private GitHub repository connected and pushed:** https://github.com/exobiz7/mission18-movie-review-intelligence (`origin/main`, initial SHA `7b39944`). GitHub-hosted Actions attempt https://github.com/exobiz7/mission18-movie-review-intelligence/actions/runs/38114719687 **did not start any runner steps**, with a GitHub billing/spending-limit annotation. See `docs/G6_GITHUB_ACTIONS_VERIFICATION.md`. This is **not a Python/test failure** and remains BLOCKED until the owner resolves billing.
+
+**G7 isolated local preflight PASSED**:
+
+- `frontend/requirements.txt`: only `streamlit==1.65.0` and `httpx==0.28.1` pinned; a fresh 37-package frontend-only virtualenv passed read-only/empty API AppTest. Backend/torch/DB packages are absent.
+- `scripts/preflight_g7_postgres.py`: actual isolated PostgreSQL 16 Docker database + Alembic, pinned real KoELECTRA, 3 synthetic movies×12 persisted reviews, repeat seed 0 writes, backend restart, read-only mutation denial. **5/5 local checks passed**; temporary container and server processes removed.
+- The docs `docs/G7_PREDEPLOY_READINESS.md` and evidence manifests `docs/evidence/g7_frontend_preflight.json`, `g7_local_postgres_preflight.json` state what was actually tested vs not tested.
+
+```bash
+cd "/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review"
+.venv/bin/python scripts/preflight_g7_frontend.py
+.venv/bin/python scripts/preflight_g7_postgres.py
+.venv/bin/pytest -q
+```
+
+**NO public cloud resources or paid services were created.** In G7 the default must remain **read-only Streamlit UI + FastAPI READ_ONLY + durable managed PostgreSQL**. A live public review submission would require actual visitor-level authentication or an independently safe demo write-sandbox; never share a global backend admin bearer credential through an anonymous Streamlit form. Provider cost/permissions must be approved before creating resources.
