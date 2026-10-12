@@ -103,10 +103,28 @@ def readiness(request: Request, db: Session = Depends(get_db)) -> ReadinessRespo
     try:
         db.execute(text("SELECT id FROM movies LIMIT 0"))
     except SQLAlchemyError as exc:
+        # Log classifications only: database URLs, SQL parameters and exception
+        # messages may contain credentials. Never emit str(exc) or raw DSNs.
+        driver_error = getattr(exc, "orig", None)
+        sqlstate = getattr(driver_error, "sqlstate", None)
+        safe_sqlstate = (
+            sqlstate
+            if isinstance(sqlstate, str) and len(sqlstate) == 5 and sqlstate.isalnum()
+            else "unknown"
+        )
+        logging.getLogger("uvicorn.error").warning(
+            "M18_READINESS_DB_FAILED sqlalchemy_error=%s driver_error=%s sqlstate=%s",
+            type(exc).__name__,
+            type(driver_error).__name__ if driver_error is not None else "unknown",
+            safe_sqlstate,
+        )
         raise ServiceError(
             503, "DATABASE_UNAVAILABLE", "데이터베이스 준비가 완료되지 않았습니다."
         ) from exc
 
     if not getattr(request.app.state, "model_ready", False):
+        logging.getLogger("uvicorn.error").warning(
+            "M18_READINESS_MODEL_FAILED model_not_loaded=true"
+        )
         raise ServiceError(503, "MODEL_UNAVAILABLE", "감성분석 모델이 아직 준비되지 않았습니다.")
     return ReadinessResponse(status="ready", database="ready", model="ready")
