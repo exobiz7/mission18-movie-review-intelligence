@@ -1,10 +1,10 @@
 # MISSION 18 — 상세설계 및 구현개발 실행계획서
-> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.9 — G6 Hosted CI Blocked, G7 Local Cloud Preflight PASS**
+> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.10 — Free-first Local Quality Gates and Manual-only GitHub Actions**
 
 | 항목 | 내용 |
 |---|---|
-| 작성 기준일 | 2026-10-11 (Asia/Seoul) |
-| 문서 상태 | **G0–G5 LOCAL PASS; G6 local PASS but GitHub-hosted CI BLOCKED by account billing (runner steps 0); G7 local predeploy PASS, public HTTPS hosting NOT STARTED**. Dedicated private GitHub repo pushed, frontend-only 37-package install and PostgreSQL 16 + Alembic + actual model 3×12, 5/5 checks. G8 pending |
+| 작성 기준일 | 2026-10-12 (Asia/Seoul) |
+| 문서 상태 | **G0–G5 LOCAL PASS; G6 local PASS, remote hosted Actions billing BLOCKED; G7 local predeploy PASS, public HTTPS hosting NOT STARTED**. 2026-10-12 free-first-quality skill reviewed read-only; manual-only workflow_dispatch preserves both hosted jobs, local quality change/release profiles retain contracts, pytest 88 tests, actual G2/G3/G6/G7 full local integration. G4/G5 existing evidence verified, not re-executed; G8 pending |
 | 대상 미션 | Codeit AI Engineering Sprint Mission 18 |
 | 지정 프로젝트 루트 | `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review` |
 | 제출 경로 | `미션18/{팀명}_{이름}/` (실제 값 미제공: 제출 패키징 시 확정) |
@@ -1713,3 +1713,29 @@ Environment: `uv.lock` resolved 96 packages including optional `ml` group; local
 2. 사용자의 Neon/Render 계정 연결 및 서비스 비용·메모리 plan 승인. 비공개 GitHub source에 대한 Streamlit/Render 권한 부여.
 3. 관리형 DB에서 Alembic migration → 임시 비공개 token으로 synthetic 3×12 seed → 공개 backend read_only 전환 → 실제 Streamlit app private/public 가시성 결정 후 HTTPS E2E.
 4. 공개 UI의 익명 리뷰 생성 기능이 평가 필수이면 별도 per-user 인증 또는 격리 demo-write 설계를 먼저 승인하고 구현. 일반 비밀 서버 토큰을 모든 방문자에게 위임하는 방식 불가.
+
+
+---
+
+## 30. Free-first-quality: GitHub Actions 비용 차단 시 품질 유지 기준 (v1.10, 2026-10-12)
+
+### 30.1 사용자 제공 로컬 스킬의 실제 읽기와 준수
+
+정확한 로컬 원본 `/Volumes/SSD 4T/zzz_critical_info/Codex/skills/free-first-quality/`에는 `SKILL.md`와 `agents/openai.yaml`만 확인되었다. 두 파일을 FULL_HOST **읽기 전용**으로 검토했으며 스킬 파일·폴더를 수정하지 않았다. 이 지침은 추가 지출 없이 **기존 품질 목적·수용 조건을 보존**하고 변경 특성에 맞게 검증 위치/빈도만 조정하며, 비용/권한 미시작과 실제 테스트 실패를 구분한다. 임의적인 공개 저장소 전환·과금 확대·self-hosted runner·보호 규칙 우회를 금지한다.
+
+### 30.2 M18 전용 Actions 및 품질 정책 변경
+
+- `exobiz7/mission18-movie-review-intelligence` PRIVATE 저장소 유지. 초기 두 hosted run `38114719687` 및 `38115306365` 모두 GitHub billing/spending-limit 문제로 **runner step 0** 상태에서 차단. 이들을 Python 테스트 FAIL 또는 CI PASS로 재분류하지 않는다.
+- PRIVATE main branch protection/rulesets 정보 조회는 GitHub에서 HTTP 403 / Pro 업그레이드 또는 공개 저장소 전환 요구; 규칙이 없다고 단정하지 않고, 실제 변경·해제하지 않았다.
+- 해당 M18 전용 `.github/workflows/ci.yml`의 **push/PR 자동 트리거만 workflow_dispatch 수동 실행으로 변경**. 기존 두 jobs `contract-and-lint`와 `pinned-real-model-smoke`, 고정 SHA action/lock/API 계약/보안/실모델 테스트는 모두 보존. 다른 repo/workflow, GitHub Billing, paid plan, 공개 가시성, runner 설정 무변경.
+- **빠른 `change` 게이트**: `.venv/bin/python scripts/verify_free_first.py --profile change` → compile/lock/Ruff/API contract/전체 pytest (신규 정책 순수검사 포함 **87개 테스트**).
+- **전체 `release` 게이트**: `--profile release` → change 전체 + pip integrity, G2 실제 HTTP+Streamlit, G3 실제 고정 KoELECTRA, G6 읽기 전용/토큰 E2E, cleanroom 새 env, G7 독립 프론트, 실제 PostgreSQL/Alembic/실모델 3영화×12리뷰·재시작/403, G4 스크린샷 SHA/G5 벤치마크 지표 불변식.
+- UI/Chrome 수정 시 `--profile release --browser`, tokenizer/model/quantization 변경 시 `--profile release --benchmark`. 플래그 없으면 G4/G5 전체 신규 실험을 수행한 것으로 주장하지 않는다.
+- 검증 기록은 Git-ignored `.local/quality/last_run.json`, 검증 당시 Git HEAD, source snapshot SHA-256, lock hash, platform/Python, 단계별 PASS, dirty state와 **LOCAL_VERIFIED / REMOTE_BLOCKED**를 별도 보존한다. 외부 CI/실서비스와 구분.
+- 사용자/조직이 필수 GitHub status를 요구한다면 로컬 결과만으로 보호된 branch나 공식 최종 수용을 우회하지 않는다. **실행 가능한 무료 경로로 개발은 계속**, GitHub-hosted 및 Linux/x86/cloud E2E gate는 실제 검증 전까지 OPEN.
+
+### 30.3 검증결과와 추후 운영
+
+2026-10-12에 `change` 로컬 PASS, `release` 로컬 PASS(실모델·임시 Postgres·G6 클린룸 포함)를 실제 수행했다. 검증 시행 시 원격 Actions는 두 건의 과거 billing 차단으로 인해 **REMOTE_BLOCKED**이고 새 원격 runner는 실행하지 않았다. 정책 구현 자체는 별도 최신 Git commit으로 확정하고, 원격 main과 SHA 일치·workflow_dispatch 트리거·자동 새 Actions run 미생성을 확인한다. 현재 단계 G7 실제 HTTPS 호스팅과 G8 제출 PDF는 별도 비용/서비스 권한 조건으로 계속 미완료.
+
+**프로젝트 운영 정본:** `docs/FREE_FIRST_QUALITY_M18.md`. 과거 원격 실패 증거: `docs/G6_GITHUB_ACTIONS_VERIFICATION.md`. 모든 현장/클라우드 PASS는 검증 시점의 구체적 입력·환경 범위로만 유효하다.

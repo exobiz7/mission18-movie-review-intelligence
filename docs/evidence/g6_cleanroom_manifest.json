@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "recorded_at_utc": "2026-10-10T14:51:44.135725+00:00",
+  "recorded_at_utc": "2026-10-12T00:48:21.042060+00:00",
   "lock_sha256": "75395f9821aee46e2da06f969d1a1662634e6def6ac18078f6c8375ffeaa5076",
   "method": "source copy excludes .git .venv .local .env; fresh uv sync + G0/G1/G2 real tests",
   "model_weights_in_cleanroom": false,
@@ -8,7 +8,7 @@
   "steps": {
     "fresh_sync": {
       "status": "PASS",
-      "elapsed_seconds": 2.59,
+      "elapsed_seconds": 2.63,
       "stdout_tail": ""
     },
     "python_compile": {
@@ -28,23 +28,23 @@
     },
     "ruff_check": {
       "status": "PASS",
-      "elapsed_seconds": 0.43,
+      "elapsed_seconds": 0.31,
       "stdout_tail": "All checks passed!"
     },
     "ruff_format": {
       "status": "PASS",
-      "elapsed_seconds": 0.02,
-      "stdout_tail": "45 files already formatted"
+      "elapsed_seconds": 0.01,
+      "stdout_tail": "50 files already formatted"
     },
     "unit_integration": {
       "status": "PASS",
-      "elapsed_seconds": 4.8,
-      "stdout_tail": "..................................................................... [ 85%]\n............                                                             [100%]\n=============================== warnings summary ===============================\n.venv/lib/python3.12/site-packages/fastapi/testclient.py:1\n  <CLEANROOM_SOURCE>/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n81 passed, 1 warning, 3 subtests passed in 1.26s"
+      "elapsed_seconds": 4.51,
+      "stdout_tail": "..................................................................... [ 78%]\n...................                                                      [100%]\n=============================== warnings summary ===============================\n.venv/lib/python3.12/site-packages/fastapi/testclient.py:1\n  <CLEANROOM_SOURCE>/.venv/lib/python3.12/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.\n    from starlette.testclient import TestClient as TestClient  # noqa\n\n-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html\n88 passed, 1 warning, 3 subtests passed in 1.40s"
     },
     "actual_g2_http_ui": {
       "status": "PASS",
-      "elapsed_seconds": 4.61,
-      "stdout_tail": "{\n  \"status\": \"PASS\",\n  \"checks\": {\n    \"actual_uvicorn_health\": true,\n    \"actual_http_create\": true,\n    \"actual_http_get_list\": true,\n    \"real_openapi_docs\": true,\n    \"actual_streamlit_server\": true,\n    \"streamlit_form_actual_http_create\": true,\n    \"streamlit_http_render_via_apptest\": true,\n    \"persistence_across_real_restart\": true,\n    \"actual_http_delete\": true,\n    \"honest_model_unavailable\": true\n  },\n  \"api_url\": \"http://127.0.0.1:64042\",\n  \"ui_url\": \"http://127.0.0.1:64043\",\n  \"database\": \"ephemeral isolated M18 fixture\"\n}"
+      "elapsed_seconds": 4.75,
+      "stdout_tail": "{\n  \"status\": \"PASS\",\n  \"checks\": {\n    \"actual_uvicorn_health\": true,\n    \"actual_http_create\": true,\n    \"actual_http_get_list\": true,\n    \"real_openapi_docs\": true,\n    \"actual_streamlit_server\": true,\n    \"streamlit_form_actual_http_create\": true,\n    \"streamlit_http_render_via_apptest\": true,\n    \"persistence_across_real_restart\": true,\n    \"actual_http_delete\": true,\n    \"honest_model_unavailable\": true\n  },\n  \"api_url\": \"http://127.0.0.1:55475\",\n  \"ui_url\": \"http://127.0.0.1:55476\",\n  \"database\": \"ephemeral isolated M18 fixture\"\n}"
     }
   },
   "cleanroom_removed": true

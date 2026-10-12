@@ -2,7 +2,7 @@
 
 - Date: 2026-10-10 (Asia/Seoul)
 - Verdict: **G6 LOCAL QUALITY/SECURITY PASS; REMOTE GITHUB CI NOT VERIFIED**
-- Formal G6 exit criterion requiring actual GitHub Actions PASS: **OPEN** until an M18 repository/remote is approved.
+- Original hosted GitHub Actions exit criterion: **BLOCKED BY ACCOUNT BILLING** after the new private M18 remote was created (2026-10-11); it is not a source-code/test failure. Free-first local verification has an independent acceptance label.
 - Source root: `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review`
 - ADR and operator guide: `docs/ADR/0007-g6-public-write-controls-and-reproducibility.md`, `docs/G6_PUBLIC_DEPLOYMENT_SECURITY.md`
 
@@ -32,7 +32,7 @@
 
 ## 3. Open deployment blockers
 
-1. **No M18 GitHub remote.** A workflow file does not demonstrate actual hosted Actions PASS. An explicitly approved private repository/remote and workflow execution are still required by the originally planned G6 CI exit gate.
+1. **GitHub-hosted CI blocked before runner allocation.** The M18 private GitHub remote now exists; Actions runs `38114719687` and `38115306365` both returned GitHub billing/spending-limit errors, with zero Python steps executed. See `G6_GITHUB_ACTIONS_VERIFICATION.md`. No source PASS can be inferred from those runs.
 2. External vulnerability/CVE audit, real provider TLS/WAF/ingress rate limits, managed PostgreSQL backup/restore, and cloud x86 cold-start are not performed. `uv pip check` validates dependency compatibility, not CVE freedom.
 3. No end-user authentication/roles or per-user write authorization. Public Streamlit only safe as **read-only** until such a system exists; an admin bearer token in anonymous UI is not visitor authentication.
 4. A public reverse proxy may appear as a loopback peer; `PUBLIC_DEPLOYMENT=true` is mandatory to prevent using local-only policy behind a public proxy.
@@ -60,6 +60,16 @@ The G2/G3/G6 smoke scripts own their ephemeral servers/databases. G4 demo persis
 ## 5. Gate and next task
 
 - **G0–G5:** local PASS (previous gates).
-- **G6:** local security/clean-room PASS; global G6 formal gate remains **PARTIALLY OPEN** until hosted CI run.
+- **G6:** original local security/clean-room PASS; free-first local quality verification adopted 2026-10-12, but hosted GitHub-runner CI remains **REMOTE_BLOCKED**, not PASS. See `FREE_FIRST_QUALITY_M18.md`.
 - **G7:** persistent PostgreSQL/public Streamlit & FastAPI deployment is NOT TESTED; requires provider/account/cost decision and private GitHub repo/remote.
 - **G8:** 13-route Docs + real movie/review screenshots and PDF/submission package NOT COMPLETE.
+
+
+## 6. 2026-10-12 Free-first quality transition (supplements G6 historical record)
+
+- Original user-provided local skill `free-first-quality/SKILL.md` was read-only reviewed; its guidance preserves test intent while separating cost/CI execution venue.
+- This M18-only workflow now uses manual `workflow_dispatch` instead of automatic pushes/PRs; **both** existing full hosted jobs are retained. No GitHub account payment, repository visibility, branch protection or other projects modified.
+- `.venv/bin/python scripts/verify_free_first.py --profile change` executes core source/contract/full pytest verification, and `--profile release` executes the real G2/G3/G6 and G7 local PostgreSQL/Streamlit integration as well as existing evidence checks.
+- 2026-10-12 local release gate: **LOCAL_VERIFIED** for Mac Studio. G4 actual Chrome and G5 full model benchmark were **not rerun** in the standard release profile; prior evidence hashes and contract were checked.
+- Hosted GitHub status remains **REMOTE_BLOCKED**; no hosted Linux runner/OS compatibility or paid provider endpoint can be declared PASS. If an enforceable organization/release check requires hosted CI, its original gate remains OPEN and cannot be bypassed by a local result.
+- Evidence and new gate policy: `docs/FREE_FIRST_QUALITY_M18.md`. Both historical GitHub failure run IDs remain preserved.

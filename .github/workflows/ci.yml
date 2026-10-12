@@ -1,9 +1,11 @@
 name: Mission18 G0-G6 App Security and Evidence Validation
 
+# Free-first policy: preserve remote CI checks, but do not auto-request
+# a billable GitHub-hosted runner while the account billing gate is blocked.
+# Use workflow_dispatch explicitly after eligibility/approval is restored.
+# Local equivalent: python scripts/verify_free_first.py --profile release
 on:
-  push:
-    branches: [main]
-  pull_request:
+  workflow_dispatch:
 
 permissions:
   contents: read

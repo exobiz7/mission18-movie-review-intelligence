@@ -186,7 +186,7 @@ cd "/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review"
 
 Clean-room validation copies source without `.git`, `.venv`, `.local`, secrets, model weights or user databases; installs dependencies in a new virtualenv; executes contract, package integrity, Ruff, tests and actual G2 HTTP+UI smoke. Actual G3 model is checked independently in the existing M18 environment.
 
-**GitHub Actions is authored but not run** because this M18 project has no dedicated GitHub remote. No repository was created or pushed automatically.
+**Historical G6 note (2026-10-10):** At that time there was no M18 GitHub remote. Since 2026-10-11 a private M18 repository exists; GitHub-hosted CI was blocked twice at billing before runner start. See the current free-first policy below.
 
 
 ## G6 remote CI and G7 local cloud-predeployment milestones (2026-10-11)
@@ -207,3 +207,24 @@ cd "/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review"
 ```
 
 **NO public cloud resources or paid services were created.** In G7 the default must remain **read-only Streamlit UI + FastAPI READ_ONLY + durable managed PostgreSQL**. A live public review submission would require actual visitor-level authentication or an independently safe demo write-sandbox; never share a global backend admin bearer credential through an anonymous Streamlit form. Provider cost/permissions must be approved before creating resources.
+
+
+## Free-first quality verification (2026-10-12)
+
+**GitHub remains PRIVATE for code/PR history, but GitHub-hosted Actions is currently `REMOTE_BLOCKED` due to account billing.** Following the read-only-reviewed `free-first-quality` skill, only the **M18** workflow's automatic `push`/`pull_request` triggers were removed; both original CI jobs, SHA-pinned actions and tests remain available by **`workflow_dispatch`** when GitHub runner eligibility returns. No paid upgrade, new CI provider, self-hosted runner, branch rule bypass or public repository conversion was performed.
+
+Local verified quality is now an explicit, reusable release gate:
+
+```bash
+cd "/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review"
+.venv/bin/python scripts/verify_free_first.py --profile change
+.venv/bin/python scripts/verify_free_first.py --profile release
+# After UI / browser behavior changes:
+.venv/bin/python scripts/verify_free_first.py --profile release --browser
+# After tokenizer / ML model / quantization changes:
+.venv/bin/python scripts/verify_free_first.py --profile release --benchmark
+```
+
+`change` = lock/compile/Ruff/13-route contract/whole pytest; `release` additionally checks real G2/G3/G6 HTTP, isolated cleanroom, G7 separate frontend and actual PostgreSQL+KoELECTRA migration/persistence, G4 screenshot SHA and G5 benchmark-evidence invariants. The actual Chrome screenshots and full G5 benchmark are **rerun only when the corresponding flags are provided**. The manifest `.local/quality/last_run.json` is ignored by Git and identifies the tested HEAD and source snapshot.
+
+**Verification labels:** `LOCAL_VERIFIED` means only the stated local Mac/containers passed; **it does not establish Linux x86/cloud E2E nor GitHub-hosted CI PASS**. `REMOTE_BLOCKED` remains until an actual runner job executes successfully. Full policy, evidence scope, branch protection limitations and operator handoff: `docs/FREE_FIRST_QUALITY_M18.md`. Historical GitHub failure runs remain preserved.
