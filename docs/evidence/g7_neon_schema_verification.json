@@ -1,0 +1,52 @@
+{
+  "status": "NEON_SCHEMA_VERIFIED",
+  "verified_date_utc": "2026-10-12",
+  "scope": "Neon project DB only; backend hosted integration not yet tested",
+  "project": {
+    "id": "dry-leaf-54440653",
+    "name": "mission18-movie-review",
+    "organization": "EXOBIZ",
+    "plan": "free_v3",
+    "region": "aws-ap-southeast-1",
+    "postgres_major_version": 16,
+    "postgres_observed_version": "16.15",
+    "branch_id": "br-wispy-block-b3x0lh6r",
+    "branch_name": "production",
+    "database": "mission18"
+  },
+  "migration": {
+    "revision": "0001",
+    "method": "Generated canonical SQL using local 'alembic upgrade head --sql' for PostgreSQL and applied identical DDL through Neon run_sql_transaction, then verified via direct live Neon schema queries; not a direct alembic CLI Neon connection",
+    "transaction_status": "PASS",
+    "tables": [
+      "alembic_version",
+      "movies",
+      "reviews"
+    ],
+    "review_indexes": [
+      "ix_reviews_movie_created_id",
+      "ix_reviews_created_id"
+    ],
+    "review_fk": {
+      "count": 1,
+      "delete_action": "CASCADE"
+    },
+    "review_check_constraint_count": 4,
+    "table_counts": {
+      "movies": 0,
+      "reviews": 0
+    }
+  },
+  "security": {
+    "database_credentials_retrieved": false,
+    "database_credentials_persisted": false,
+    "other_projects_modified": false,
+    "additional_paid_services_created": false
+  },
+  "g7_remaining": [
+    "Actual FastAPI live connection to managed Neon PostgreSQL: NOT TESTED",
+    "Neon TLS/secret injection on real host: NOT TESTED",
+    "Hosted Render backend, HTTPS and cloud production inference: NOT DEPLOYED",
+    "Streamlit Cloud E2E and public visitor authentication: NOT DEPLOYED"
+  ]
+}

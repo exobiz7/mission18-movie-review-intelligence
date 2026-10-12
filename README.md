@@ -1,6 +1,6 @@
 # Mission 18 — Movie Review Sentiment Intelligence
 
-**Status (2026-10-11): G0–G5 LOCAL PASS; G6 local security PASS but GitHub-hosted CI BLOCKED by account billing before runner startup; G7 cloud PREDEPLOY LOCAL PASS (isolated Streamlit 37-package install + actual PostgreSQL/KoELECTRA 3 movies × 12 reviews + readonly restart). No public backend, database or Streamlit app has been deployed. G8 pending.**
+**Status (2026-10-11): G0–G5 LOCAL PASS; G6 local security PASS but GitHub-hosted CI BLOCKED by account billing before runner startup; G7 cloud PREDEPLOY LOCAL PASS (isolated Streamlit 37-package install + actual PostgreSQL/KoELECTRA 3 movies × 12 reviews + readonly restart). A Neon Free managed PostgreSQL project now exists with the canonical migration 0001 applied and read-back verified; no hosted FastAPI or Streamlit app is deployed. G8 pending.**
 
 Canonical local root: `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review`.
 
@@ -228,3 +228,9 @@ cd "/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review"
 `change` = lock/compile/Ruff/13-route contract/whole pytest; `release` additionally checks real G2/G3/G6 HTTP, isolated cleanroom, G7 separate frontend and actual PostgreSQL+KoELECTRA migration/persistence, G4 screenshot SHA and G5 benchmark-evidence invariants. The actual Chrome screenshots and full G5 benchmark are **rerun only when the corresponding flags are provided**. The manifest `.local/quality/last_run.json` is ignored by Git and identifies the tested HEAD and source snapshot.
 
 **Verification labels:** `LOCAL_VERIFIED` means only the stated local Mac/containers passed; **it does not establish Linux x86/cloud E2E nor GitHub-hosted CI PASS**. `REMOTE_BLOCKED` remains until an actual runner job executes successfully. Full policy, evidence scope, branch protection limitations and operator handoff: `docs/FREE_FIRST_QUALITY_M18.md`. Historical GitHub failure runs remain preserved.
+
+## G7 actual Neon Free schema (2026-10-12)
+
+The user created an M18-only Neon **Free** PostgreSQL project named `mission18-movie-review` (project `dry-leaf-54440653`, AWS Singapore, PostgreSQL 16, database `mission18`, default branch `production`). Direct read-only connector queries verified the newly provisioned database was empty. The canonical, unchanged Alembic `0001` PostgreSQL DDL was generated with `alembic upgrade head --sql` locally and executed **as a single Neon SQL transaction** (no DB password downloaded or written to a local file). Actual connector read-back verified `alembic_version=0001`, `movies` and `reviews`, two review indexes, FK CASCADE and four CHECK constraints. Both application tables contain zero rows. See `docs/evidence/g7_neon_schema_verification.json`.
+
+**NOT YET TESTED**: a live FastAPI connection with managed Neon credentials/TLS, Render/Streamlit hosting, cloud cold start and public HTTPS E2E. This does not require another Neon DB schema creation. No paid Render service, API secret, synthetic review data or external app was created. Cloud deployment requires explicit approved backend hosting plan and secure provider-side `DATABASE_URL` injection.

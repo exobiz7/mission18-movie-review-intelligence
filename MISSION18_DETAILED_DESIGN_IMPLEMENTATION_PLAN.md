@@ -1,5 +1,5 @@
 # MISSION 18 — 상세설계 및 구현개발 실행계획서
-> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.10 — Free-first Local Quality Gates and Manual-only GitHub Actions**
+> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.11 — Neon Free Live PostgreSQL Schema Baseline Verified**
 
 | 항목 | 내용 |
 |---|---|
@@ -1739,3 +1739,16 @@ Environment: `uv.lock` resolved 96 packages including optional `ml` group; local
 2026-10-12에 `change` 로컬 PASS, `release` 로컬 PASS(실모델·임시 Postgres·G6 클린룸 포함)를 실제 수행했다. 검증 시행 시 원격 Actions는 두 건의 과거 billing 차단으로 인해 **REMOTE_BLOCKED**이고 새 원격 runner는 실행하지 않았다. 정책 구현 자체는 별도 최신 Git commit으로 확정하고, 원격 main과 SHA 일치·workflow_dispatch 트리거·자동 새 Actions run 미생성을 확인한다. 현재 단계 G7 실제 HTTPS 호스팅과 G8 제출 PDF는 별도 비용/서비스 권한 조건으로 계속 미완료.
 
 **프로젝트 운영 정본:** `docs/FREE_FIRST_QUALITY_M18.md`. 과거 원격 실패 증거: `docs/G6_GITHUB_ACTIONS_VERIFICATION.md`. 모든 현장/클라우드 PASS는 검증 시점의 구체적 입력·환경 범위로만 유효하다.
+
+
+---
+
+## 31. G7 Neon Free 실제 영속 데이터베이스 초기 스키마 검증 (2026-10-12, v1.11)
+
+- 사용자가 Neon 콘솔에서 EXOBIZ **Free** 조직에 M18 전용 프로젝트 `mission18-movie-review` (project `dry-leaf-54440653`, Singapore `aws-ap-southeast-1`, PostgreSQL 16.15)을 생성했다. 기본 브랜치 `production` = `br-wispy-block-b3x0lh6r`, 실제 데이터베이스 `mission18`, owner role `mission18_owner`.
+- Neon Connector read-only SQL로 생성 직후 public 사용자 테이블 **0개**, 데이터베이스/role/버전/리전/Free 요금제를 확인.
+- 로컬 M18 소스 `backend/migrations/versions/0001_movies_reviews.py`의 변경 없는 Alembic 마이그레이션을 `alembic upgrade head --sql` PostgreSQL offline 모드로 **원본 DDL 생성/확인**. 해당 DDL 6문장을 Neon `run_sql_transaction`으로 하나의 트랜잭션에서 적용했다. **Neon 상의 직접 `alembic upgrade head` 실행은 아님**. DB 비밀번호/URI 추출 및 로컬 저장 없이 connector SQL API만 사용.
+- 실제 Neon DB에서 다시 검증: `alembic_version=0001`, `movies` 7열, `reviews` 12열, 리뷰 보조 인덱스 2개, `ON DELETE CASCADE` FK 1개, CHECK 제약 4개. movies/reviews 데이터는 각각 **0건**, 생성 시드/실개인 리뷰 없음.
+- 기존 Mac Studio 로컬 테스트용 PostgreSQL 3영화×12리뷰 smoke와 **별개**이며 그 36건은 Neon으로 전송하지 않았다. 새 외부 Render 인스턴스·Neon 유료 플랜·GitHub Actions runner·Streamlit Cloud 서비스는 생성하지 않았다.
+- **현재 G7 상태:** 로컬 G7 프리플라이트 PASS + Neon Free 실제 managed DB **SCHEMA PASS**. 그러나 TLS credential injection으로 실행한 실제 FastAPI→Neon 통합, HTTPS 공개 Render FastAPI/Streamlit 배포·모델 cold-start·접속/조회 브라우저 E2E는 **NOT TESTED**, G7 전체 종료 미달.
+- 증빙 정본: `docs/evidence/g7_neon_schema_verification.json`, 운영 인계: `docs/G7_PREDEPLOY_READINESS.md`. 연결 URI/role password는 리포트·Git에 포함하지 않는다. Neon schema에 Alembic 0001이 이미 적용됐으므로 초기화/중복 테이블 생성 금지.
