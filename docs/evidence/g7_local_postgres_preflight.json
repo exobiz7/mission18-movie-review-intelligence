@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "recorded_at_utc": "2026-10-12T00:48:35.249368+00:00",
+  "recorded_at_utc": "2026-10-12T10:15:21.931534+00:00",
   "checks": {
     "isolated_postgres_loopback_ready": true,
     "alembic_postgres_migration": true,
@@ -13,5 +13,5 @@
   "request_mode": "PUBLIC_DEPLOYMENT true; token for seeding; read_only on restart",
   "credential_exposure": "ephemeral credentials never persisted or printed",
   "no_external_cloud_provisioned": true,
-  "elapsed_seconds": 10.5
+  "elapsed_seconds": 10.54
 }
