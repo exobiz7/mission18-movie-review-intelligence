@@ -52,3 +52,34 @@ Files: `docs/evidence/g7_linux_512m_onnx.json` and `docs/evidence/g7_render_free
 
 - **Assistant:** repo Docker code and proof, model checksum, least-privilege Neon role validation, Git safety/commit/push, eligible Render Free provisioning and actual HTTP verification.
 - **User only if requested:** approve Render GitHub private-repository integration in the Render UI (OAuth); choose any paid plan if Free cannot support the service; approve public visibility and grading demo write policy. Neither is presumed.
+
+## 6. Provider-side secret setup: explicit owner action (2026-10-12)
+
+**Gate:** The connected tools cannot safely complete password creation/injection, and their security filter rejected the attempt. No alternative secret-handling bypass is authorized. Rechecked Neon: `mission18_public_reader` still `NOLOGIN`, no admin/write privileges; Render currently has **zero** services. No Render create attempt was made.
+
+**User step A — Neon, only inside the authenticated provider UI:** Open project `mission18-movie-review` → `production` → SQL Editor, DB `mission18`. Using a password-manager-generated strong alphanumeric password of >=40 characters (or a 64-character random hex secret), run:
+
+```sql
+ALTER ROLE mission18_public_reader
+  WITH LOGIN PASSWORD 'REPLACE_WITH_PRIVATE_RANDOM_PASSWORD';
+```
+
+Replace the quoted placeholder **in the Neon SQL editor only**; do not copy the password into ChatGPT, Git, screenshots, URL query fields, or Render build logs. The Neon SQL editor may retain query history, so clear sensitive editor history using available provider controls if supported. If a Neon database role edit UI supports setting credentials without entering SQL, prefer it. Do not touch `mission18_owner`, the migration, or other projects.
+
+**User step B — Render dashboard, FREE ONLY:** In workspace `AIspace`, authorize Render's GitHub integration for just private repo `exobiz7/mission18-movie-review-intelligence` if necessary. Create **Web Service** from Git: name `m18-movie-review-api`, branch `main`, runtime **Docker**, Dockerfile `./Dockerfile.g7-onnx`, region **Singapore**, instance **Free**, **Auto Deploy OFF**. Stop before any payment method/paid tier approval; no upgrade.
+
+Set server-side environment variables (private values only in Render's dashboard):
+
+```dotenv
+DATABASE_URL=postgresql+psycopg://mission18_public_reader:REPLACE_WITH_PRIVATE_PASSWORD@ep-blue-cake-b3znhrb0.c-4.ap-southeast-1.aws.neon.tech/mission18?sslmode=require
+PUBLIC_DEPLOYMENT=true
+WRITE_POLICY=read_only
+MODEL_BACKEND=onnx_fp32
+CORS_ALLOW_ORIGINS=https://m18-movie-review.streamlit.app
+HF_HUB_OFFLINE=1
+TOKENIZERS_PARALLELISM=false
+```
+
+Use the **same password** from Neon. The example URL is **not a working credential**. If the generated secret includes URI-reserved characters, percent-encode them; random alphanumeric/hex secrets avoid this. CORS origin is a provisional desired Streamlit app name and must be changed to the exact actual frontend URL when deployed. Model ID, revision and path are already pinned inside Dockerfile. **Never put the password into frontend or GitHub Actions.** `DATABASE_URL` must be a Render server-only environment secret.
+
+**User completion signal:** Say only `Render Free 서비스 생성 및 Neon 환경변수 설정 완료` (or report the provider's error/status without credentials). Then assistant will read the actual Render Free plan, GitHub build/deploy status, `/health`, `/readiness`, read-only GETs, HTTP 403, Neon schema/role privileges and cold-start logs before claiming hosted PASS. At no stage is an owner credential or public writes needed.
