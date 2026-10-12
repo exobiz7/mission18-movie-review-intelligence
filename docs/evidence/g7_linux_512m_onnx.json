@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "observed_at_utc": "2026-10-12T08:01:51.072496+00:00",
+  "platform": "linux/amd64 under emulation on macOS arm64",
+  "memory_limit_mib": 512,
+  "cpu_limit": 0.1,
+  "memory_observed_mib": 205.8,
+  "safety_margin_floor_mib": 72,
+  "real_http_health_ready": true,
+  "real_onnx_positive_review_post": true,
+  "onnx_sha256": "2f0393b01cdc0d348a336884e89bcfce8a55c89d800a9fd9685293b45de80822",
+  "user_cloud_db_credentials_used": false,
+  "render_cloud_deployed": false,
+  "linux_server_hardware_real": false,
+  "source_and_model_mount_readonly": true
+}

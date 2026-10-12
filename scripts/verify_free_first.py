@@ -192,6 +192,7 @@ def main() -> None:
             stage("dependency_integrity", [UV, "pip", "check", "--python", str(PY)])
             stage("g2_actual_http_ui", [str(PY), "scripts/smoke_g2.py"], 120)
             stage("g3_actual_model_http_ui", [str(PY), "scripts/smoke_g3.py"], 180)
+            stage("g7_actual_onnx_fp32_http", [str(PY), "scripts/smoke_g7_onnx.py"], 120)
             stage("g6_actual_security", [str(PY), "scripts/smoke_g6.py"], 120)
             stage("g6_cleanroom", [str(PY), "scripts/cleanroom_g6.py"], 240)
             stage("g7_frontend_isolated", [str(PY), "scripts/preflight_g7_frontend.py"], 180)

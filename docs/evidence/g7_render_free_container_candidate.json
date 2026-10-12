@@ -1,0 +1,23 @@
+{
+  "status": "PASS",
+  "checked_at_utc": "2026-10-12T08:13:57.021136+00:00",
+  "platform": "emulated linux/amd64 (macOS ARM host), not hosted Render",
+  "image": "m18-g7-onnx-candidate:amd64",
+  "self_contained_artifacts": true,
+  "external_mounts": 0,
+  "source_model_download_at_build": "pinned immutable HF commit + safetensors SHA",
+  "onnx_export_sha256": "2f0393b01cdc0d348a336884e89bcfce8a55c89d800a9fd9685293b45de80822",
+  "torch_not_in_final_image": true,
+  "onnx_actual_inference": {
+    "review_written": true,
+    "torch_absent": true,
+    "source_weights_absent": true,
+    "probability_valid": true
+  },
+  "container_memory_limit_mib": 512,
+  "cpu_limit": 0.1,
+  "observed_memory_mib": 210.6,
+  "wall_elapsed_s": 102.6,
+  "neon_live_app_connection": "NOT TESTED",
+  "render_cloud_service": "NOT DEPLOYED"
+}

@@ -1,0 +1,35 @@
+# M18 G7 two-stage Render Free CPU backend; source model is downloaded by pinned SHA.
+# Build-only Torch/Transformers never enter final runtime.
+# This is still candidate until live Render Free deployment and cloud HTTP are verified.
+FROM python:3.12-slim-bookworm AS exporter
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
+    HF_HUB_DISABLE_TELEMETRY=1 TOKENIZERS_PARALLELISM=false
+WORKDIR /build
+COPY scripts/download_model.py scripts/export_g7_fp32.py /build/scripts/
+# CPU-only PyTorch from the official CPU index avoids CUDA-heavy packages.
+RUN python -m pip install --no-cache-dir "torch==2.14.1" --index-url https://download.pytorch.org/whl/cpu
+RUN python -m pip install --no-cache-dir \
+    "transformers==4.57.6" "huggingface-hub==0.36.2" "safetensors>=0.4,<1" \
+    "tokenizers==0.22.2" "numpy==2.5.3" "onnx==1.23.2" "onnxruntime==1.31.0"
+RUN python scripts/download_model.py \
+    && python scripts/export_g7_fp32.py
+
+FROM python:3.12-slim-bookworm AS runtime
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
+    TOKENIZERS_PARALLELISM=false OMP_NUM_THREADS=1 \
+    MODEL_BACKEND=onnx_fp32 \
+    MODEL_ID=daekeun-ml/koelectra-small-v3-nsmc \
+    MODEL_REVISION=d1c0233fc013ae8bd879d7b61f2bec69aa3af4c9 \
+    MODEL_PATH=/opt/m18/model \
+    MODEL_ONNX_PATH=/opt/m18/model.onnx \
+    MAX_TOKENS=192
+WORKDIR /srv
+COPY requirements-g7-onnx-runtime.txt /tmp/m18-onnx-requirements.txt
+RUN python -m pip install --no-cache-dir -r /tmp/m18-onnx-requirements.txt
+COPY backend/ /srv/backend/
+COPY alembic.ini /srv/alembic.ini
+# Only the approved tokenizer is needed by ONNX CPU at runtime, not source safetensors.
+COPY --from=exporter /build/.local/models/koelectra-small-v3-nsmc/tokenizer.json /opt/m18/model/tokenizer.json
+COPY --from=exporter /build/.local/benchmark/onnx/koelectra-fp32.onnx /opt/m18/model.onnx
+EXPOSE 10000
+CMD ["/bin/sh","-c","exec python -m uvicorn backend.app.main:app --host 0.0.0.0 --port ${PORT:-10000} --workers 1 --no-access-log"]

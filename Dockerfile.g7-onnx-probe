@@ -1,0 +1,11 @@
+# Isolated M18 Linux/512MiB test image; not a deployed production image.
+# Model binaries are never copied into this image or added to Git.
+FROM python:3.12-slim-bookworm
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 TOKENIZERS_PARALLELISM=false \
+    OMP_NUM_THREADS=1
+WORKDIR /srv
+COPY requirements-g7-onnx-runtime.txt /tmp/m18-onnx-requirements.txt
+RUN python -m pip install --no-cache-dir -r /tmp/m18-onnx-requirements.txt
+EXPOSE 8000
+# Bind the M18 source/assets read-only and provide writable /tmp at docker run.
+CMD ["/bin/sh","-c","python -m alembic upgrade head && exec python -m uvicorn backend.app.main:app --host 0.0.0.0 --port 8000 --no-access-log"]

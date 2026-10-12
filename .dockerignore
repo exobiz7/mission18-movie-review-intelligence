@@ -1,0 +1,13 @@
+# G7 free-first: never transmit .local models, secrets or .venv in Docker context.
+**
+!Dockerfile.g7-onnx
+!requirements-g7-onnx-runtime.txt
+!scripts/
+!scripts/download_model.py
+!scripts/export_g7_fp32.py
+!backend/
+!backend/app/
+!backend/app/**
+!backend/migrations/
+!backend/migrations/**
+!alembic.ini

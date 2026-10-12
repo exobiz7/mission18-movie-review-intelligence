@@ -1,0 +1,11 @@
+# G7 Linux deployment probe, minimal CPU-only backend. No torch/transformers/streamlit.
+# Direct versions match tested Mac uv.lock; transitive packages resolved at build.
+fastapi==0.143.0
+uvicorn==0.54.0
+sqlalchemy==2.1.4
+alembic==1.20.0
+pydantic-settings==2.15.0
+psycopg[binary]==3.3.6
+onnxruntime==1.31.0
+tokenizers==0.22.2
+numpy==2.5.3

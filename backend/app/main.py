@@ -12,6 +12,7 @@ from sqlalchemy.orm import Session
 from backend.app.config import get_settings
 from backend.app.db import get_db
 from backend.app.errors import ServiceError, register_error_handlers
+from backend.app.onnx_sentiment import PinnedOnnxFp32MovieAnalyzer
 from backend.app.routers.analytics import router as analytics_router
 from backend.app.routers.movies import router as movies_router
 from backend.app.routers.reviews import router as reviews_router
@@ -40,6 +41,16 @@ async def lifespan(app: FastAPI):
             app.state.model_ready = True
         except (ModelUnavailable, ImportError, RuntimeError):
             logging.getLogger(__name__).exception("Verified sentiment model initialization failed")
+    if config.model_backend == "onnx_fp32":
+        try:
+            if config.model_id != PINNED_MODEL_ID or config.model_revision != PINNED_REVISION:
+                raise ModelUnavailable("Unverified model ID or revision")
+            app.state.analyzer = PinnedOnnxFp32MovieAnalyzer(
+                config.model_path, config.model_onnx_path, max_tokens=config.max_tokens
+            )
+            app.state.model_ready = True
+        except (ModelUnavailable, ImportError, RuntimeError):
+            logging.getLogger(__name__).exception("Verified ONNX FP32 initialization failed")
     try:
         yield
     finally:

@@ -42,7 +42,7 @@ Evidence: `docs/evidence/g7_frontend_preflight.json` and `docs/evidence/g7_local
 | Provider | Source-checked capability | Decision |
 |---|---|---|
 | Streamlit Community Cloud | Supports private GitHub repos with additional GitHub authorization; entrypoint-local requirements; private-repo apps default to private (one private app at a time) | **Preferred frontend.** Public sharing requires explicit visibility change and ownership review |
-| Render free web service | 0.1 CPU / 512MB RAM; spins down when idle. G5 PyTorch worker ~494MB peak RSS on Mac, without deployment OS/multiple workers | **High OOM/performance risk; not a verified feasible model host** |
+| Render Free web service | 0.1 CPU / 512MiB. G3 PyTorch worker ~494MB peak RSS; optional G7 ONNX FP32 self-contained Linux amd64 emulated candidate **210.6MiB** with real HTTP under 512MiB/0.1 CPU | **Free-first candidate technically verified in Linux emulator; actual Render cloud NOT YET TESTED** |
 | Render 2GB web tier | 1 CPU / 2GB RAM (`1c-2g`), advertised ~US$25/month at checked pricing date | **Technically safer paid candidate**, but NO service or charge is authorized yet |
 | Render free PostgreSQL | Expires after 30 days; no durable storage assumption | **REJECT for persistent grading database** |
 | Neon Free PostgreSQL | As of Oct 2 2026, 1GB per project in the published Free plan | **Preferred durable prototype database** subject to account limits, scale-to-zero, secret/TLS management, user connection |
@@ -81,7 +81,7 @@ On hosted production, ensure the migration uses a direct suitable Postgres conne
 
 ### Step B: FastAPI hosting — choose an approved plan
 
-The original `uv.lock` and `pyproject.toml` are the backend dependency contract. A Render Python service (after external account authorization) needs:
+The original `uv.lock` and `pyproject.toml` remain the canonical **PyTorch** backend dependency contract. For **free-tier** provisioning, the independently tested optional `onnx_fp32` runtime uses **`Dockerfile.g7-onnx`** (two-stage CPU-only export + minimal runtime). This avoids the original PyTorch ~494MB process RSS; does not accept G5's rejected INT8. If the full PyTorch model is used instead, a larger paid memory plan may be necessary. An old PyTorch service template is retained below for reference only:
 
 ```text
 Runtime: Python 3.12 (set PYTHON_VERSION exactly to a tested patch)
@@ -107,7 +107,7 @@ HF_HUB_OFFLINE=1
 TOKENIZERS_PARALLELISM=false
 ```
 
-**Do not paste a fake placeholder host into real settings**; these templates are not deployment-ready URLs. Run a platform-specific dependency/cold start/RSS benchmark before accepting a production memory tier. Private GitHub repo must be explicitly authorized with the hosting provider.
+**Free-tier Docker candidate tested:** `Dockerfile.g7-onnx`, `requirements-g7-onnx-runtime.txt`, `scripts/export_g7_fp32.py` and `scripts/probe_g7_selfcontained.py`. The actual self-contained Linux amd64 candidate generated the G5-approved ONNX SHA-256 and recorded 210.6MiB under 512MiB / 0.1 CPU, with real FastAPI review inference. Proof: `docs/evidence/g7_render_free_container_candidate.json`. A Mac/Linux emulator run **is not** Render public-hosted memory/cold-start/HTTPS verification. This is a no-fee deployment candidate, not license to silently upgrade plans.\n\n**Neon database security:** a `mission18_public_reader` role was created directly via explicit SQL with NOLOGIN/no superuser/CREATEDB/CREATEROLE, and was verified to have SELECT on the M18 movies/reviews but no INSERT/DELETE. It is deliberately **NOLOGIN** until a Render Free service is ready for secure secret injection. Neon's convenience role creation gave admin privileges; the temporary privileged role was deleted (verified). Do not use the Neon project owner's admin credential as the public app's DATABASE_URL. Evidence: `docs/evidence/g7_neon_reader_security.json`.\n\n**Do not paste a fake placeholder host into real settings**; these templates are not deployment-ready URLs. Private GitHub repo must be explicitly authorized with the hosting provider. Render `plan=free`, `region=singapore`, Dockerfile `Dockerfile.g7-onnx`, `autoDeploy=no` are the intended configuration. No hosted service has been deployed as of this proof.
 
 ### Step C: First synthetic seed, then public read-only enforcement
 

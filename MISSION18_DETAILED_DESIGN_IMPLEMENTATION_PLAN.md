@@ -1,5 +1,5 @@
 # MISSION 18 — 상세설계 및 구현개발 실행계획서
-> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.11 — Neon Free Live PostgreSQL Schema Baseline Verified**
+> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.12 — Free ONNX FP32 Docker Candidate Verified**
 
 | 항목 | 내용 |
 |---|---|
@@ -1752,3 +1752,17 @@ Environment: `uv.lock` resolved 96 packages including optional `ml` group; local
 - 기존 Mac Studio 로컬 테스트용 PostgreSQL 3영화×12리뷰 smoke와 **별개**이며 그 36건은 Neon으로 전송하지 않았다. 새 외부 Render 인스턴스·Neon 유료 플랜·GitHub Actions runner·Streamlit Cloud 서비스는 생성하지 않았다.
 - **현재 G7 상태:** 로컬 G7 프리플라이트 PASS + Neon Free 실제 managed DB **SCHEMA PASS**. 그러나 TLS credential injection으로 실행한 실제 FastAPI→Neon 통합, HTTPS 공개 Render FastAPI/Streamlit 배포·모델 cold-start·접속/조회 브라우저 E2E는 **NOT TESTED**, G7 전체 종료 미달.
 - 증빙 정본: `docs/evidence/g7_neon_schema_verification.json`, 운영 인계: `docs/G7_PREDEPLOY_READINESS.md`. 연결 URI/role password는 리포트·Git에 포함하지 않는다. Neon schema에 Alembic 0001이 이미 적용됐으므로 초기화/중복 테이블 생성 금지.
+
+
+---
+
+## 32. G7 Render Free ONNX FP32 비용·정확도·보안 배포 후보 (v1.12, 2026-10-12)
+
+- **정본 보존:** G3 PyTorch 기본 AI 모델은 무변경. 비용 제약 해결을 위해서만 `MODEL_BACKEND=onnx_fp32` 선택형 고정 ONNX FP32 백엔드 추가. 기존 G5에서 INT8은 P(positive) 최대 오차 0.869와 20/2,000건 분류 불일치로 **여전히 금지**. FP32는 2,000건 분류 불일치 0, 최대 긍정 확률 오차 약 1.448e-5.
+- **원본 보안:** 원본 고정 Hugging Face revision `d1c0233fc013ae8bd879d7b61f2bec69aa3af4c9`와 `model.safetensors` SHA-256 `012a5926dcfe2d0b1caf17ef79963097838f693ce12fad2a27d8802bd3fdec28`를 Docker 빌드에서 검사. ONNX FP32 생성 SHA `2f0393b01cdc0d348a336884e89bcfce8a55c89d800a9fd9685293b45de80822`와 tokenizer SHA `db6f152b710372fb53b07d27aa7665ff1a2efb308250b69373530caf5da0b9f2`에 하나라도 불일치하면 배포 거부.
+- **실행 분리:** `Dockerfile.g7-onnx` multi-stage. builder에만 Torch/Transformers 및 safetensors 원본. 최종 이미지에는 FastAPI/SQLAlchemy/psycopg + ONNX Runtime/tokenizers/NumPy, `tokenizer.json`과 54MiB FP32 ONNX만 존재. 모델 가중치·비밀정보를 Git/Docker build context에 포함하지 않는다.
+- **실제 검증:** Mac native ONNX + FastAPI HTTP/리뷰/재시작 ~249.8MB RSS. Linux amd64 QEMU `--cpus=0.1 --memory=512m` 임시 Docker: 원본 모델 bind-mount 검증 205.8MiB, **자체 포함 Docker 이미지 검증 210.6MiB**, `/health`·`/readiness` 200, 실모델 리뷰 POST/긍정 확률 반환, 외부 mount 0, OOM 없음. **Linux x86 에뮬레이션이지 Render 실제 하드웨어/고객 URL 검증이 아니다**. 증빙 `docs/evidence/g7_linux_512m_onnx.json`, `docs/evidence/g7_render_free_container_candidate.json`.
+- **DB 최소 권한:** Neon 기본 `create_postgres_role`이 과도하게 `neon_superuser` 권한을 부여하는 것이 실조회에서 발견되어 해당 테스트 역할 즉시 삭제 확인. 대신 M18 한정 `mission18_public_reader`를 `NOLOGIN/NOSUPERUSER/NOCREATEDB/NOCREATEROLE`로 직접 생성했고 `movies/reviews` SELECT만 허용, INSERT/DELETE 거부·관리자 멤버십 부재를 SQL로 확인. 배포 전 안전한 비밀번호·LOGIN 설정과 Render 전용 환경변수 전달이 필요; **Neon owner DSN을 공개 백엔드에 저장하지 않는다**. 증빙 `docs/evidence/g7_neon_reader_security.json`.
+- **보안 운영:** `PUBLIC_DEPLOYMENT=true`, `WRITE_POLICY=read_only`, 정확한 HTTPS CORS origin만 허용. Neon 실제 DB에는 이미 Alembic `0001`이 적용되었으므로 컨테이너 시작 시 migration/create_all 금지. 공개 사용자가 관리용 토큰을 소유하지 않게 한다.
+- **향후 게이트:** Render 연결 워크스페이스 Free plan/SG region/autoDeploy=no/private GitHub 권한, 강한 최소권한 DB secret/TLS, 서비스 `/health`/`/readiness`/reads/403, cold start/OOM/HTTPS, Streamlit Cloud 공개 UI 및 G8는 **별도 실클라우드 검증 필수**. 배포 승인 전까지 자원 생성·과금·GitHub Actions 자동 실행은 하지 않는다.
+- **정본 문서:** `docs/G7_RENDER_FREE_ONNX_RUNBOOK.md`, `docs/G7_PREDEPLOY_READINESS.md`, `docs/ADR/0008-g7-fp32-onnx-free-runtime.md`, `scripts/verify_free_first.py`.

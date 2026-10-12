@@ -234,3 +234,17 @@ cd "/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review"
 The user created an M18-only Neon **Free** PostgreSQL project named `mission18-movie-review` (project `dry-leaf-54440653`, AWS Singapore, PostgreSQL 16, database `mission18`, default branch `production`). Direct read-only connector queries verified the newly provisioned database was empty. The canonical, unchanged Alembic `0001` PostgreSQL DDL was generated with `alembic upgrade head --sql` locally and executed **as a single Neon SQL transaction** (no DB password downloaded or written to a local file). Actual connector read-back verified `alembic_version=0001`, `movies` and `reviews`, two review indexes, FK CASCADE and four CHECK constraints. Both application tables contain zero rows. See `docs/evidence/g7_neon_schema_verification.json`.
 
 **NOT YET TESTED**: a live FastAPI connection with managed Neon credentials/TLS, Render/Streamlit hosting, cloud cold start and public HTTPS E2E. This does not require another Neon DB schema creation. No paid Render service, API secret, synthetic review data or external app was created. Cloud deployment requires explicit approved backend hosting plan and secure provider-side `DATABASE_URL` injection.
+
+## G7 Render Free ONNX FP32 deploy candidate (2026-10-12)
+
+For cost-controlled hosting an optional `MODEL_BACKEND=onnx_fp32` adapter is implemented. **Default local G3 PyTorch inference is unchanged**. The G5-approved FP32 ONNX export is reproduced bit-for-bit at Docker build time from the immutable Korean NSMC checkpoint; runtime carries tokenizer + FP32 ONNX weights but no Torch/Transformers/safetensors. **No INT8** inference is used.
+
+A real Linux/amd64 container executed under emulated Render Free **0.1 CPU / 512MiB** constraints:
+- Pinned source download and ONNX checksum verification succeeded in a multi-stage image build.
+- Actual self-contained FastAPI HTTP movie/review sentiment inference succeeded with **210.6MiB** observed container memory, no external mounts, no OOM.
+- Local optional ONNX adapter test and Torch probability parity passed; actual SQLite review writes/aggregates/restart/read-only 403 passed.
+- **Hosted Render is not yet verified** by those emulated tests; TLS Neon production connection, HTTPS public readiness and cold start require separate checks.
+
+Deployment build: `Dockerfile.g7-onnx`, `.dockerignore`, `requirements-g7-onnx-runtime.txt`. Runbook: `docs/G7_RENDER_FREE_ONNX_RUNBOOK.md`; architecture/security decision: `docs/ADR/0008-g7-fp32-onnx-free-runtime.md`; evidence: `docs/evidence/g7_render_free_container_candidate.json` and `docs/evidence/g7_neon_reader_security.json`.
+
+**Neon security:** only a dedicated SQL-created `mission18_public_reader` has table SELECT access with no admin membership, and remains NOLOGIN until secret injection can be secured. Do not place Neon owner credentials or model weights in Git or frontend secrets. The default policy remains `WRITE_POLICY=read_only` for a public demonstration.
