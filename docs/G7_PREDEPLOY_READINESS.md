@@ -145,3 +145,13 @@ Once both sides have valid URLs and allowed origins, test real HTTPS `/health`, 
 - **Direct Neon DB audit:** `alembic_version=0001`, movies 0, reviews 0; `mission18_public_reader` login and table SELECT allowed, admin membership/superuser/CREATEDB/CREATEROLE and movie/review INSERT denied. Render Live log interval contains **zero `M18_READINESS_DB_FAILED`** warnings.
 - **Exactly what is verified:** managed Render Free app boot + hosted readiness model flag + live SQL database read + public API security/CORS. **Not verified:** cloud review inference through an actual persisted POST (intentionally public read-only), Streamlit public frontend/browser E2E, long-term idle cold-start and hosted GitHub Actions.
 - Evidence is recorded without credentials in `docs/evidence/g7_render_neon_live_api.json`. **Next independent G7 gate:** provision Streamlit Community Cloud frontend in READ_ONLY mode, secure only the public `API_BASE_URL` (never Neon DSN), and run browser E2E and cold-start checks before full G7 PASS.
+
+## 9. 2026-10-13 — Streamlit Cloud frontend predeploy acceptance
+
+**LOCAL-TO-LIVE-API PASS, STREAMLIT CLOUD NOT DEPLOYED.**
+
+- Executed `scripts/smoke_g7_streamlit_live.py` (real `streamlit.testing.v1.AppTest` against actual `https://m18-movie-review-api.onrender.com`). The UI displays backend + AI readiness, public read-only notice, accurate zero-movie content, and disabled movie registration. No real rows mutated; no secrets used. Evidence: `docs/evidence/g7_streamlit_hosted_api_preflight.json`.
+- `frontend/app.py` public read-only empty-state wording now avoids inviting visitors to an unusable registration form. Existing local CRUD and private development mode remain functional.
+- Verified Streamlit Community Cloud official prerequisites: GitHub OAuth private repo permission, branch `main`, entrypoint `frontend/app.py`, Python 3.12, entrypoint-local requirements; add root-level Secrets TOML with public `API_BASE_URL`, `FRONTEND_READ_ONLY=true`, `PUBLIC_DEPLOYMENT=true`, no DB URL or write token. Desired URL `https://m18-movie-review.streamlit.app` is not yet allocated. Private source repo remains private; Streamlit app sharing setting requires independent owner authorization.
+- **No connected Streamlit Community Cloud administrative tool is available; user must perform the one-time GitHub authorization and Create app action in Streamlit UI.** Exact user screen guide and security gate: `docs/G7_STREAMLIT_COMMUNITY_CLOUD_DEPLOY.md`.
+- Hosted browser E2E, Streamlit URL and sharing state, and idle/cold-start long-run acceptance remain OPEN. Render/Neon hosted-backend PASS is unaffected.

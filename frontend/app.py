@@ -93,8 +93,8 @@ st.markdown(
     <section class="m18-hero" aria-label="서비스 소개">
       <span class="m18-kicker">CINÉ SIGNAL · MOVIE INTELLIGENCE</span>
       <h1>영화의 반응을, 데이터로 읽다.</h1>
-      <p>영화를 둘러보고 한국어 리뷰를 남기면 실제 AI 모델이 긍정·부정을 분석합니다.
-      영화별 AI 긍정 지수와 최근 리뷰까지 한곳에서 확인하세요.</p>
+      <p>한국어 영화 리뷰를 AI가 긍정·부정으로 분석하는 서비스입니다.
+      영화별 긍정 지수와 최근 리뷰를 둘러보세요.</p>
     </section>
     """,
     unsafe_allow_html=True,
@@ -172,7 +172,11 @@ with gallery_tab:
     if not backend_online:
         st.info("영화 데이터를 불러올 수 없습니다. 백엔드 연결을 확인하세요.")
     elif not movies:
-        st.info("등록된 영화가 없습니다. ‘영화 관리’에서 첫 영화를 추가하세요.")
+        st.info(
+            "아직 공개된 영화 데이터가 없습니다. 운영자가 데이터를 준비하면 여기에서 확인할 수 있습니다."
+            if ui_read_only
+            else "등록된 영화가 없습니다. ‘영화 관리’에서 첫 영화를 추가하세요."
+        )
     elif not filtered_movies:
         st.info("검색 조건에 맞는 영화가 없습니다. 필터를 변경해 보세요.")
     else:
@@ -210,7 +214,11 @@ with gallery_tab:
 with review_tab:
     st.subheader("리뷰 등록 및 AI 감성 분석")
     if not movies:
-        st.info("영화를 먼저 등록한 뒤 리뷰를 작성할 수 있습니다.")
+        st.info(
+            "현재 등록된 영화가 없어 리뷰 조회가 비어 있습니다. 공개 데모는 읽기 전용입니다."
+            if ui_read_only
+            else "영화를 먼저 등록한 뒤 리뷰를 작성할 수 있습니다."
+        )
     else:
         option_ids = [movie["id"] for movie in movies]
         position = option_ids.index(selected_id) if selected_id in option_ids else 0
@@ -293,7 +301,11 @@ with review_tab:
                 unsafe_allow_html=True,
             )
             if summary["review_count"] == 0:
-                st.info("등록된 리뷰가 없습니다. 첫 리뷰를 작성해 AI 분석을 시작하세요.")
+                st.info(
+                    "아직 표시할 분석 결과가 없습니다. 공개 화면에서는 새 리뷰를 등록할 수 없습니다."
+                    if ui_read_only
+                    else "등록된 리뷰가 없습니다. 첫 리뷰를 작성해 AI 분석을 시작하세요."
+                )
             else:
                 st.subheader("선택한 영화의 리뷰")
                 st.caption(

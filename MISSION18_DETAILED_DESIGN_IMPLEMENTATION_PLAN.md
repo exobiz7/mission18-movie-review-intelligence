@@ -1,5 +1,5 @@
 # MISSION 18 — 상세설계 및 구현개발 실행계획서
-> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.12 — Free ONNX FP32 Docker Candidate Verified**
+> **Movie Review Sentiment Intelligence | Design & Delivery Baseline v1.13 — Streamlit Cloud Frontend Handoff and Live API Preflight**
 
 | 항목 | 내용 |
 |---|---|
@@ -1766,3 +1766,16 @@ Environment: `uv.lock` resolved 96 packages including optional `ml` group; local
 - **보안 운영:** `PUBLIC_DEPLOYMENT=true`, `WRITE_POLICY=read_only`, 정확한 HTTPS CORS origin만 허용. Neon 실제 DB에는 이미 Alembic `0001`이 적용되었으므로 컨테이너 시작 시 migration/create_all 금지. 공개 사용자가 관리용 토큰을 소유하지 않게 한다.
 - **향후 게이트:** Render 연결 워크스페이스 Free plan/SG region/autoDeploy=no/private GitHub 권한, 강한 최소권한 DB secret/TLS, 서비스 `/health`/`/readiness`/reads/403, cold start/OOM/HTTPS, Streamlit Cloud 공개 UI 및 G8는 **별도 실클라우드 검증 필수**. 배포 승인 전까지 자원 생성·과금·GitHub Actions 자동 실행은 하지 않는다.
 - **정본 문서:** `docs/G7_RENDER_FREE_ONNX_RUNBOOK.md`, `docs/G7_PREDEPLOY_READINESS.md`, `docs/ADR/0008-g7-fp32-onnx-free-runtime.md`, `scripts/verify_free_first.py`.
+
+
+---
+
+## 33. G7 Streamlit Community Cloud 실제 Render 연동 사전검증 및 배포 인계 (v1.13, 2026-10-13)
+
+- **기존 정본 유지:** Render Free HTTPS API의 실제 `GET /readiness` 200 (Neon DB ready, ONNX 모델 ready), read-only GET 200, 공개 삭제 403, Neon SELECT-only 역할은 이미 실증 완료. 소스 GitHub `main` 비공개와 Render 수동 배포·GitHub Actions 수동 트리거 원칙 유지.
+- **로컬에서 실제 공개 API로 실행한 Streamlit AppTest PASS:** `scripts/smoke_g7_streamlit_live.py` 실행으로 `frontend/app.py`가 운영 중인 `https://m18-movie-review-api.onrender.com`를 HTTP로 조회하고, 모델 준비 정상·읽기 전용·데이터 0건 안내·영화 등록 비활성화를 검증했다. 실제 영속 DB 변경/DB 비밀번호/관리자 쓰기 토큰 사용 없음. 증빙 `docs/evidence/g7_streamlit_hosted_api_preflight.json`.
+- **UI 안전/명확성:** 공개 READ_ONLY에서 데이터가 비어 있을 때 방문자에게 비활성화된 '영화 관리에서 등록'이나 '첫 리뷰 작성'을 요구하지 않도록 조건부 안내 수정. 기존 localhost 개발/쓰기 경로는 그대로 둠.
+- **프론트엔드 패키지 분리:** `frontend/requirements.txt`에 Streamlit 1.65.0 + httpx 0.28.1만 명시. Torch/SQLAlchemy/Neon 비밀값을 Community Cloud에 복제하지 않음. Streamlit Cloud `Advanced settings/Secrets`의 root-level TOML `API_BASE_URL="https://m18-movie-review-api.onrender.com"`, `FRONTEND_READ_ONLY="true"`, `PUBLIC_DEPLOYMENT="true"`만 요구.
+- **실제 SaaS 접속 한계:** ChatGPT에 설치된 커넥터에는 Streamlit Community Cloud 앱 생성/설정 도구가 없으므로 **Streamlit Cloud는 아직 생성하지 않았다**. 사용자 소유 Community Cloud 계정에서 private GitHub OAuth/deploy key 승인, 새 앱 생성(`exobiz7/mission18-movie-review-intelligence`, `main`, `frontend/app.py`, Python 3.12), 필요 시 앱 Sharing 공개 설정을 선택해야 한다. 저장소 visibility Public 전환 불필요. `m18-movie-review.streamlit.app`은 사용 가능 여부 확인 전의 목표 URL로, 예약/배포 완료 URL로 단정하지 않음.
+- **남은 G7 정식 종료 조건:** Community Cloud 실제 앱/URL, private GitHub 권한, 앱 공개 정책, HTTPS/브라우저 렌더링/GET/403, 무유료 운영·휴면 복구·출처 비밀값 점검. 영화·리뷰 0건 상태에서 UI는 정상이나 실제 데이터 기반 분석 시연은 별도 승인/데이터 검증 작업이다.
+- 세부 사용자 동작 `docs/G7_STREAMLIT_COMMUNITY_CLOUD_DEPLOY.md`, 실행 로그 및 증빙 `docs/evidence/g7_streamlit_hosted_api_preflight.json`. **Status: G7 hosted-backend PASS + Streamlit-to-live-backend AppTest PASS; Community Cloud public browser E2E OPEN.**

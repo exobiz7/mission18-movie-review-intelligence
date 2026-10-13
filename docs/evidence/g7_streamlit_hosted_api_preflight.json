@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "tested_on": "2026-10-13",
+  "scope": "Actual hosted Render API + Streamlit AppTest local frontend process",
+  "backend_url": "https://m18-movie-review-api.onrender.com",
+  "frontend_entrypoint": "frontend/app.py",
+  "frontend_python": "3.12",
+  "real_render_neon_ready_visible": true,
+  "readonly_information_visible": true,
+  "empty_state_guides_operator_not_visitor": true,
+  "movie_create_button_disabled": true,
+  "public_mutation_attempted": false,
+  "secrets_or_database_credentials_used": false,
+  "streamlit_cloud_deployed": false,
+  "browser_e2e": "NOT TESTED",
+  "notes": "AppTest connects to live Render HTTPS with public GET only. Re-run for updated hosted content."
+}

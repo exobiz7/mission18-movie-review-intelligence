@@ -252,3 +252,9 @@ A real Linux/amd64 container executed under emulated Render Free **0.1 CPU / 512
 Deployment build: `Dockerfile.g7-onnx`, `.dockerignore`, `requirements-g7-onnx-runtime.txt`. Runbook: `docs/G7_RENDER_FREE_ONNX_RUNBOOK.md`; architecture/security decision: `docs/ADR/0008-g7-fp32-onnx-free-runtime.md`; evidence: `docs/evidence/g7_render_free_container_candidate.json` and `docs/evidence/g7_neon_reader_security.json`.
 
 **Neon security:** only a dedicated SQL-created `mission18_public_reader` has table SELECT access with no admin membership, and remains NOLOGIN until secret injection can be secured. Do not place Neon owner credentials or model weights in Git or frontend secrets. The default policy remains `WRITE_POLICY=read_only` for a public demonstration.
+
+## G7 Streamlit Community Cloud — deployment handoff (2026-10-13)
+
+The existing `frontend/app.py` now has a verified read-only empty-data user experience. `scripts/smoke_g7_streamlit_live.py` actually executed the Streamlit app against live Render Free HTTPS and confirmed the KoELECTRA/model-ready signal, read-only controls, disabled creation and correct empty-state notices. Local free-first **release 16/16 PASS**, remote Community Cloud **NOT DEPLOYED**. See `docs/evidence/g7_streamlit_hosted_api_preflight.json`.
+
+The owner must deploy once at `https://share.streamlit.io` using *private* repo `exobiz7/mission18-movie-review-intelligence`, `main`, `frontend/app.py`, Python 3.12, and root-level TOML Secrets **only** `API_BASE_URL = "https://m18-movie-review-api.onrender.com"`, `FRONTEND_READ_ONLY = "true"`, `PUBLIC_DEPLOYMENT = "true"`. No Neon role, DB credential, Render secret or write token is needed in Streamlit. App privacy/sharing is a separate owner decision. Exact UI instructions: `docs/G7_STREAMLIT_COMMUNITY_CLOUD_DEPLOY.md`.
