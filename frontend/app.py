@@ -116,7 +116,8 @@ with st.sidebar:
     st.caption("모델: KoELECTRA Small · NSMC")
     st.caption("모든 저장 및 AI 분석은 FastAPI가 담당합니다.")
 
-backend_online = api.health()
+with st.spinner("무료 서버 연결 중입니다. 휴면 상태였다면 1분 이상 걸릴 수 있습니다…"):
+    backend_online = api.health()
 if backend_online:
     ready = api.readiness()
     if ready:

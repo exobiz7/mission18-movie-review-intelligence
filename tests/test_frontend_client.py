@@ -38,3 +38,26 @@ def test_backend_json_and_error_mapping(monkeypatch: pytest.MonkeyPatch):
         api.movie(999)
     assert error.value.code == "MOVIE_NOT_FOUND"
     assert requests == [("GET", "/movies"), ("DELETE", "/movies/1"), ("GET", "/movies/999")]
+
+
+def test_render_free_health_wakeup_has_long_timeout_without_slowing_other_api_calls(
+    monkeypatch: pytest.MonkeyPatch,
+):
+    observed: list[tuple[str, float]] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        observed.append((request.url.path, request.extensions["timeout"]["read"]))
+        if request.url.path == "/health":
+            return httpx.Response(200, json={"status": "ok"})
+        return httpx.Response(200, json=[])
+
+    original = httpx.Client
+    monkeypatch.setattr(
+        httpx,
+        "Client",
+        lambda *args, **kwargs: original(*args, **kwargs, transport=httpx.MockTransport(handler)),
+    )
+    client = MovieApiClient("https://m18-movie-review-api.onrender.com", timeout=5.0)
+    assert client.health() is True
+    assert client.movies() == []
+    assert observed == [("/health", 90.0), ("/movies", 5.0)]

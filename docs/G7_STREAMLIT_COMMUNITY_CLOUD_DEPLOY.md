@@ -44,3 +44,7 @@
 - Render Free의 휴면 복귀(최대 수십 초), 브라우저 전체 동작, 향후 데이터 시딩/리뷰 감성 추론은 별도 검증이다. 배포 전에 PASS로 선언하지 않는다.
 
 **공식 근거:** https://docs.streamlit.io/deploy/streamlit-community-cloud/deploy-your-app/deploy · https://docs.streamlit.io/develop/concepts/connections/secrets-management · https://docs.streamlit.io/deploy/streamlit-community-cloud/share-your-app
+
+## 5. Render Free 휴면 복귀와 첫 방문자
+
+Render Free는 비활동 중 슬립 상태가 되며, 처음 깨우는 요청이 50초 이상 소요될 수 있다. Streamlit `frontend/api_client.py`의 **최초 `GET /health`만 90초 타임아웃**으로 설정했고, `frontend/app.py`는 연결 중 스피너를 보여 준다. 나머지 API 목록 조회는 기존 5초 타임아웃을 유지한다. `tests/test_frontend_client.py`가 서로 다른 대기 시간을 확인했으며 실제 Render API와 Streamlit AppTest 연결도 PASS. 90초를 넘는 provider 장애·휴면 지연은 여전히 오류로 표시될 수 있고, 이것을 실제 Streamlit Cloud cold-start 검증으로 주장하지 않는다.

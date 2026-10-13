@@ -72,7 +72,10 @@ class MovieApiClient:
 
     def health(self) -> bool:
         try:
-            return self._request("GET", "/health").get("status") == "ok"
+            # Render Free can take 50+ seconds to wake from idle. Only the
+            # initial liveness probe gets a long read timeout; other API
+            # operations keep their short fail-fast timeout.
+            return self._request("GET", "/health", timeout=90.0).get("status") == "ok"
         except ApiClientError:
             return False
 
