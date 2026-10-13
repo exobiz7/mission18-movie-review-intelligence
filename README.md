@@ -235,6 +235,10 @@ The user created an M18-only Neon **Free** PostgreSQL project named `mission18-m
 
 **NOT YET TESTED**: a live FastAPI connection with managed Neon credentials/TLS, Render/Streamlit hosting, cloud cold start and public HTTPS E2E. This does not require another Neon DB schema creation. No paid Render service, API secret, synthetic review data or external app was created. Cloud deployment requires explicit approved backend hosting plan and secure provider-side `DATABASE_URL` injection.
 
+## G7 Render Free + Neon Free actual hosted API LIVE (2026-10-13)
+
+**Verified live:** [FastAPI health](https://m18-movie-review-api.onrender.com/health) and [real DB+model readiness](https://m18-movie-review-api.onrender.com/readiness) both return HTTP 200 over HTTPS. Movie/review GETs return empty arrays from managed Neon Free DB; `mission18_public_reader` has SELECT-only privileges, and anonymous DELETE returns 403 `WRITE_DISABLED`. CORS denies unknown origin, permits the explicitly configured future Streamlit URL. This is **hosted backend PASS, not full G7 browser E2E**: public Streamlit UI is not yet deployed, and posting a real hosted review was intentionally prohibited by public read-only policy. Evidence: `docs/evidence/g7_render_neon_live_api.json`. The API root `/` returns expected 404 until a separate frontend is deployed.
+
 ## G7 Render Free ONNX FP32 deploy candidate (2026-10-12)
 
 For cost-controlled hosting an optional `MODEL_BACKEND=onnx_fp32` adapter is implemented. **Default local G3 PyTorch inference is unchanged**. The G5-approved FP32 ONNX export is reproduced bit-for-bit at Docker build time from the immutable Korean NSMC checkpoint; runtime carries tokenizer + FP32 ONNX weights but no Torch/Transformers/safetensors. **No INT8** inference is used.

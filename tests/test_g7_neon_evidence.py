@@ -27,5 +27,5 @@ def test_g7_neon_evidence_matches_initial_alembic_revision():
     assert data["security"]["database_credentials_persisted"] is False
     assert len(data["g7_remaining"]) >= 2
     public = (ROOT / "docs/G7_PREDEPLOY_READINESS.md").read_text(encoding="utf-8")
-    assert "NEON FREE CLOUD SCHEMA PASS" in public
-    assert "HOSTED FASTAPI+STREAMLIT NOT DEPLOYED" in public
+    assert "G7 HOSTED BACKEND LIVE PASS" in public
+    assert "STREAMLIT PUBLIC UI NOT DEPLOYED" in public

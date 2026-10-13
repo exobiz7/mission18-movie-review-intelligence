@@ -26,3 +26,12 @@ Commit verified source + tests, normal-push M18 private main. Trigger one **manu
 Render reference: https://render.com/docs/health-checks (2xx/3xx, 15-minute deploy deadline).
 
 **Do not claim hosted G7 PASS until real `/readiness` returns 200 and live Neon read-only GET works.**
+
+
+## Resolved on 2026-10-13 — current hosted backend live
+
+The user corrected the Render server-only `DATABASE_URL` to use the actual Neon direct endpoint, retaining the restricted `mission18_public_reader` database role and TLS. The next environment-triggered Render deploy `dep-db6o1eff3r2c73br264g` completed in **35.5 seconds**, status **live**, on the same Git SHA `de336ab19d8c633459dc8918ddb54c698dc80266`. Live public HTTPS `GET /readiness` returned 200 with `database=ready` and `model=ready`; `GET /movies` and `GET /reviews` both returned 200 and empty lists.
+
+Before the correction the diagnostic deployment logged `M18_READINESS_DB_FAILED sqlalchemy_error=OperationalError sqlstate=unknown` on every health-check attempt and timed out after 15 minutes. **The error was an unusable Render→Neon DB connection**, but the logs did not prove whether authentication, hostname, SSL or another network setting was the precise root cause. The direct-endpoint correction was followed by observed healthy DB access; this temporal evidence must not be represented as independent proof of a particular low-level error.
+
+After recovery, the actual public DELETE endpoints returned 403 `WRITE_DISABLED`, and the direct Neon SQL audit confirmed SELECT-only role privileges and zero app rows. The public Streamlit browser flow is not yet deployed or tested. See `docs/evidence/g7_render_neon_live_api.json`. Historical failures above remain retained for traceability.

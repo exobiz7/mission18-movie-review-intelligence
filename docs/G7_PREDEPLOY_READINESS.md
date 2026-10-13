@@ -1,7 +1,7 @@
 # Mission 18 — G7 배포 사전 검증 및 운영 결정서
 
-**2026-10-12 · 단계: G7 LOCAL PREDEPLOY PASS + NEON FREE CLOUD SCHEMA PASS / HOSTED FASTAPI+STREAMLIT NOT DEPLOYED.**
-**Actual cloud resources:** the user created ONE dedicated Neon Free Postgres project (`mission18-movie-review`, `dry-leaf-54440653`, Singapore, PostgreSQL 16); the canonical M18 schema revision `0001` has been applied and verified, no movie/review data was inserted. No Render FastAPI, hosted Streamlit app, other cloud service or paid instance has been created. GitHub-hosted Actions remains blocked by billing (see `G6_GITHUB_ACTIONS_VERIFICATION.md`).
+**2026-10-13 · G7 HOSTED BACKEND LIVE PASS (Render Free HTTPS + Neon Free READ) / STREAMLIT PUBLIC UI NOT DEPLOYED.**
+**Actual cloud resources:** Neon Free PostgreSQL 16 (`mission18`, revision `0001`) + Render **Free** HTTPS backend `https://m18-movie-review-api.onrender.com` are now live. Actual `/health`, `/readiness`, movie/review reads return 200; no application data inserted. Public anonymous writes return 403. Streamlit public UI remains undeployed. No paid instances were created; hosted GitHub Actions remains blocked by billing. Evidence: `docs/evidence/g7_render_neon_live_api.json`.
 
 ## 1. Architecture and source of truth
 
@@ -135,3 +135,13 @@ Once both sides have valid URLs and allowed origins, test real HTTPS `/health`, 
 2. Neon and Render connectors are already linked; **Neon Free project and M18 schema are verified**. Render service provisioning/plan choice and any paid plan require explicit user authorization; no new Render service was created.
 3. Decide whether to pay for Render ≥2GB backend or authorize another adequately sized provider. **No paid service is automatically created.**
 4. Decide whether the private-repo Streamlit app should become public for grading and whether graders need interactive write access. Until then keep it private/read-only.
+
+
+## 8. Actual Render Free → Neon Free hosted backend LIVE verification (2026-10-13)
+
+- Render service `srv-db6ca72d0e5s73a73sng`, Docker `Dockerfile.g7-onnx`, Singapore, **Free**, manual deploy, Git SHA `de336ab19d8c633459dc8918ddb54c698dc80266`, deploy `dep-db6o1eff3r2c73br264g`, status `live`. The redeploy after the user corrected `DATABASE_URL` to the direct Neon host succeeded in **35.5 seconds**; prior failures are retained as history, not silently overwritten.
+- **Actual HTTPS (from Mac Studio, not a mock):** `/health` 200 `{"status":"ok"}`; `/readiness` 200 `{"status":"ready","database":"ready","model":"ready"}`; `/movies`, `/reviews`, `/reviews/recent` all 200 with empty lists; OpenAPI 200 with 9 paths. `/` intentionally returns FastAPI 404 because it is an API service, not the Streamlit web page.
+- **Actual read-only safety:** DELETE nonexistent movie/review IDs returns HTTP 403 `WRITE_DISABLED` without any row changes. Unknown Origin CORS preflight returns 400/no allow-origin, configured frontend Origin returns 200. No POST that could write data was issued.
+- **Direct Neon DB audit:** `alembic_version=0001`, movies 0, reviews 0; `mission18_public_reader` login and table SELECT allowed, admin membership/superuser/CREATEDB/CREATEROLE and movie/review INSERT denied. Render Live log interval contains **zero `M18_READINESS_DB_FAILED`** warnings.
+- **Exactly what is verified:** managed Render Free app boot + hosted readiness model flag + live SQL database read + public API security/CORS. **Not verified:** cloud review inference through an actual persisted POST (intentionally public read-only), Streamlit public frontend/browser E2E, long-term idle cold-start and hosted GitHub Actions.
+- Evidence is recorded without credentials in `docs/evidence/g7_render_neon_live_api.json`. **Next independent G7 gate:** provision Streamlit Community Cloud frontend in READ_ONLY mode, secure only the public `API_BASE_URL` (never Neon DSN), and run browser E2E and cold-start checks before full G7 PASS.

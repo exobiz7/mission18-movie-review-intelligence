@@ -1,0 +1,107 @@
+{
+  "scope": "Actual hosted G7 Render Free API to Neon database verification; not yet full public Streamlit UI E2E",
+  "status": "HOSTED_BACKEND_PASS",
+  "service": {
+    "id": "srv-db6ca72d0e5s73a73sng",
+    "name": "m18-movie-review-api",
+    "url": "https://m18-movie-review-api.onrender.com",
+    "region": "singapore",
+    "plan": "free",
+    "runtime": "docker",
+    "dockerfile": "Dockerfile.g7-onnx",
+    "auto_deploy": false,
+    "health_check_path": "/readiness"
+  },
+  "deploy": {
+    "id": "dep-db6o1eff3r2c73br264g",
+    "status": "live",
+    "git_commit": "de336ab19d8c633459dc8918ddb54c698dc80266",
+    "duration_seconds": 35.5,
+    "trigger": "service_updated"
+  },
+  "verified_https_routes": [
+    {
+      "path": "/",
+      "status": 404,
+      "expected": true
+    },
+    {
+      "path": "/health",
+      "status": 200,
+      "body": {
+        "status": "ok"
+      }
+    },
+    {
+      "path": "/readiness",
+      "status": 200,
+      "body": {
+        "status": "ready",
+        "database": "ready",
+        "model": "ready"
+      }
+    },
+    {
+      "path": "/movies",
+      "status": 200,
+      "items": 0
+    },
+    {
+      "path": "/reviews",
+      "status": 200,
+      "items": 0
+    },
+    {
+      "path": "/reviews/recent",
+      "status": 200,
+      "items": 0
+    },
+    {
+      "path": "/openapi.json",
+      "status": 200,
+      "paths": 9
+    }
+  ],
+  "public_safety": {
+    "movie_delete_nonexistent_id": {
+      "status": 403,
+      "error_code": "WRITE_DISABLED"
+    },
+    "review_delete_nonexistent_id": {
+      "status": 403,
+      "error_code": "WRITE_DISABLED"
+    },
+    "unauthorized_origin_preflight_status": 400,
+    "approved_origin_preflight_status": 200,
+    "attempted_create_or_mutate_actual_data": false
+  },
+  "database": {
+    "project": "mission18-movie-review",
+    "plan": "free_v3",
+    "database_name": "mission18",
+    "migration_revision": "0001",
+    "movies": 0,
+    "reviews": 0,
+    "role": "mission18_public_reader",
+    "rolcanlogin": true,
+    "superuser": false,
+    "createdb": false,
+    "createrole": false,
+    "neon_superuser_member": false,
+    "select_movies": true,
+    "select_reviews": true,
+    "insert_movies": false,
+    "insert_reviews": false
+  },
+  "observed_log_checks": {
+    "db_readiness_failure_markers_in_new_live_deploy": 0
+  },
+  "not_yet_verified": [
+    "Public Streamlit UI hosted and browser E2E",
+    "Cloud sentiment inference via writing a real review (intentionally disabled on public deployment)",
+    "Production idle-to-cold-start/repeated long-duration monitoring",
+    "GitHub-hosted Actions (account billing blocked)"
+  ],
+  "no_secrets_stored": true,
+  "verified_on": "2026-10-13"
+}

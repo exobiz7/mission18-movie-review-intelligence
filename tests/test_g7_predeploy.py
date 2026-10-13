@@ -48,7 +48,7 @@ def test_g7_remote_is_correctly_recorded_as_blocked_not_passed():
     assert "CI BLOCKED" in summary
     assert "0 executed steps" in summary
     readiness = (ROOT / "docs/G7_PREDEPLOY_READINESS.md").read_text(encoding="utf-8")
-    assert "HOSTED FASTAPI+STREAMLIT NOT DEPLOYED" in readiness
+    assert "STREAMLIT PUBLIC UI NOT DEPLOYED" in readiness
     assert "PUBLIC_DEPLOYMENT=true" in readiness
     assert "WRITE_POLICY=read_only" in readiness
     assert "FRONTEND_READ_ONLY=true" in readiness
