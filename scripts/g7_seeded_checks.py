@@ -33,7 +33,8 @@ def verify_seeded_live_ui(app: object) -> dict[str, object]:
 
     tabs = [item.label for item in app.tabs]
     assert tabs == ["영화 둘러보기", "리뷰 작성·분석", "최근 리뷰 10개", "영화 관리"], (
-        "required tabs missing or changed", tabs
+        "required tabs missing or changed",
+        tabs,
     )
     buttons: dict[str, list[bool]] = {}
     for item in app.button:

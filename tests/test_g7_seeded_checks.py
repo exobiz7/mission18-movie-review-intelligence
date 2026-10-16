@@ -5,6 +5,7 @@ from __future__ import annotations
 from types import SimpleNamespace as Obj
 
 import pytest
+
 from scripts.g7_seeded_checks import verify_seeded_live_ui
 
 
@@ -16,13 +17,14 @@ def fake_app(*, movies=3, reviews=36, readonly=True):
         return Obj(label=label, disabled=disabled)
 
     return Obj(
-        exception=[], error=[],
+        exception=[],
+        error=[],
         success=[Obj(value="서버·AI 모델 연결 정상")],
         info=[Obj(value="읽기 전용 데모: 변경 불가")],
         metric=[metric("등록된 영화", f"{movies}편"), metric("등록된 리뷰", f"{reviews}건")],
-        tabs=[Obj(label=v) for v in (
-            "영화 둘러보기", "리뷰 작성·분석", "최근 리뷰 10개", "영화 관리"
-        )],
+        tabs=[
+            Obj(label=v) for v in ("영화 둘러보기", "리뷰 작성·분석", "최근 리뷰 10개", "영화 관리")
+        ],
         button=[
             *[button("이 영화 리뷰 보기", False) for _ in range(movies)],
             button("영화 등록", readonly),
