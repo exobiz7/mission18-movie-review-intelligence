@@ -11,8 +11,8 @@ import os
 from datetime import datetime, timezone
 from pathlib import Path
 
-from streamlit.testing.v1 import AppTest
 from g7_seeded_checks import verify_seeded_live_ui
+from streamlit.testing.v1 import AppTest
 
 ROOT = Path(__file__).resolve().parents[1]
 API = "https://m18-movie-review-api.onrender.com"
