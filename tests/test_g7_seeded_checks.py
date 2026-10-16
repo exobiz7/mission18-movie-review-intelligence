@@ -5,7 +5,6 @@ from __future__ import annotations
 from types import SimpleNamespace as Obj
 
 import pytest
-
 from scripts.g7_seeded_checks import verify_seeded_live_ui
 
 
