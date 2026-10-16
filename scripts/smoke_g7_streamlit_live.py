@@ -16,7 +16,7 @@ from g7_seeded_checks import verify_seeded_live_ui
 
 ROOT = Path(__file__).resolve().parents[1]
 API = "https://m18-movie-review-api.onrender.com"
-EVIDENCE = ROOT / "docs/evidence/g7_streamlit_hosted_api_preflight.json"
+EVIDENCE = ROOT / ".local/g7/g7_streamlit_hosted_api_seeded.json"
 
 
 def main() -> None:
@@ -34,7 +34,7 @@ def main() -> None:
     evidence = {
         "status": "PASS",
         "tested_on": datetime.now(timezone.utc).date().isoformat(),
-        "scope": "Actual hosted Render API + Streamlit AppTest local frontend process",
+        "scope": "Real hosted Render GET API + local Streamlit AppTest (not Community Cloud browser)",
         "backend_url": API,
         "frontend_entrypoint": "frontend/app.py",
         "frontend_python": "3.12",
@@ -48,9 +48,9 @@ def main() -> None:
         "movie_create_button_disabled": True,
         "public_mutation_attempted": False,
         "secrets_or_database_credentials_used": False,
-        "streamlit_cloud_deployed": False,
+        "streamlit_cloud_deployed_verified_by_this_test": False,
         "browser_e2e": "NOT TESTED",
-        "notes": "AppTest connects to live Render HTTPS with public GET only, requires seeded movies and read-only actions. Cloud browser E2E separately unverified.",
+        "notes": "AppTest connects to live Render HTTPS with public GET only. Historical tracked G7 preflight is immutable; current observed results are written to ignored .local. Cloud browser E2E is separately unverified.",
     }
     EVIDENCE.parent.mkdir(parents=True, exist_ok=True)
     EVIDENCE.write_text(json.dumps(evidence, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
