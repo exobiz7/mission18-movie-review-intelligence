@@ -6,13 +6,21 @@ Only FastAPI HTTP is used for persistent data and model inference.
 from __future__ import annotations
 
 import os
+import sys
 from datetime import date
 from pathlib import Path
 from urllib.parse import urlsplit
 
 import streamlit as st
-from api_client import ApiClientError, MovieApiClient
-from ui_helpers import (
+
+# Streamlit Cloud may have a cached/unrelated generic "ui_helpers" module.
+# Resolve our canonical frontend package from this checkout deterministically.
+_PROJECT_ROOT = str(Path(__file__).resolve().parents[1])
+if _PROJECT_ROOT not in sys.path:
+    sys.path.insert(0, _PROJECT_ROOT)
+
+from frontend.api_client import ApiClientError, MovieApiClient  # noqa: E402
+from frontend.ui_helpers import (  # noqa: E402
     gallery_page,
     positive_index_text,
     poster_card_html,
