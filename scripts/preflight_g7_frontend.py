@@ -66,6 +66,8 @@ file = Path("frontend/app.py").resolve()
 app = AppTest.from_file(str(file), default_timeout=20).run()
 assert not app.exception, [e.message for e in app.exception]
 assert any("읽기 전용 데모" in i.value for i in app.info)
+next(b for b in app.button if b.key == "sidebar_register").click().run()
+assert not app.exception
 assert any(b.label == "영화 등록" and b.disabled for b in app.button)
 assert any(b.label == "리뷰 등록·분석" for b in app.button) is False or all(
     b.disabled for b in app.button if b.label == "리뷰 등록·분석"

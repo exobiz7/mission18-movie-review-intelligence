@@ -228,6 +228,8 @@ def test_public_frontend_read_only_renders_disabled_forms(monkeypatch):
     app_test = AppTest.from_file(str(path), default_timeout=20).run()
     assert not app_test.exception
     assert any("읽기 전용 데모" in info.value for info in app_test.info)
+    next(b for b in app_test.button if b.key == "sidebar_register").click().run()
+    assert not app_test.exception
     assert any(b.label == "영화 등록" and b.disabled for b in app_test.button)
 
 

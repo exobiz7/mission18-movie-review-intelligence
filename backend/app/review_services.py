@@ -86,12 +86,31 @@ def get_review(db: Session, review_id: int) -> ReviewResponse:
     return ReviewResponse.model_validate(review)
 
 
+def _escape_like(value: str) -> str:
+    """Treat '%'/'_' in literal movie-title searches as text, not LIKE wildcards."""
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 def list_reviews(
-    db: Session, *, limit: int, offset: int, movie_id: int | None = None
+    db: Session,
+    *,
+    limit: int,
+    offset: int,
+    movie_id: int | None = None,
+    movie_query: str | None = None,
+    genre: str | None = None,
 ) -> list[ReviewResponse]:
     if movie_id is not None:
         _movie_exists(db, movie_id)
     stmt = select(Review)
+    if movie_query or genre:
+        stmt = stmt.join(Movie, Movie.id == Review.movie_id)
+        if movie_query:
+            stmt = stmt.where(
+                Movie.title.ilike(f"%{_escape_like(movie_query.strip())}%", escape="\\")
+            )
+        if genre:
+            stmt = stmt.where(func.lower(Movie.genre) == genre.lower())
     if movie_id is not None:
         stmt = stmt.where(Review.movie_id == movie_id)
     stmt = stmt.order_by(Review.created_at.desc(), Review.id.desc()).offset(offset).limit(limit)

@@ -229,8 +229,10 @@ def main() -> int:
             try:
                 ui = AppTest.from_file(str(ROOT / "frontend" / "app.py"), default_timeout=25).run()
                 assert not ui.exception, f"AppTest exceptions: {ui.exception}"
-                assert any(header.value == "최근 등록된 리뷰 10개" for header in ui.subheader)
+                assert "최근 리뷰" in ui.segmented_control[0].options
                 assert any("시네마 아틀리에" in h.value for h in ui.subheader)
+                next(btn for btn in ui.button if btn.label == "리뷰 작성하기").click().run()
+                assert not ui.exception
                 fields = {field.label: field for field in ui.text_input}
                 fields["작성자"].set_value("streamlit_smoke")
                 textarea = next(area for area in ui.text_area if area.label == "리뷰 내용")
