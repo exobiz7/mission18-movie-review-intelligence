@@ -26,6 +26,20 @@ header[data-testid="stHeader"] { background: transparent; }
   background:linear-gradient(153deg,#1e5e64 0%,#276d75 40%,#d08d60 100%);
   color:#fff;
 }
+.m18-poster { aspect-ratio:2/3; }
+.m18-poster-real {
+  position:relative; padding:0; min-height:0; overflow:hidden;
+  display:block; background:#e9f0f2;
+}
+.m18-poster-img {
+  display:block; width:100%; height:100%; position:absolute; inset:0;
+  object-fit:cover; object-position:center;
+}
+.m18-poster-credit {
+  position:absolute; right:9px; bottom:9px; z-index:1;
+  color:#fff; background:rgba(8,28,42,.78); border-radius:5px;
+  padding:3px 7px; font-weight:700; font-size:.65rem;
+}
 .m18-poster.alt1 { background:linear-gradient(153deg,#223e60,#60517a 53%,#b3777c); }
 .m18-poster.alt2 { background:linear-gradient(153deg,#50485f,#a3655e 53%,#dfa966); }
 .m18-poster .m18-poster-eyebrow { font-size:.65rem; font-weight:750; letter-spacing:.17em; opacity:.85; }

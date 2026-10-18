@@ -13,6 +13,7 @@ from urllib.parse import urlsplit
 import streamlit as st
 from api_client import ApiClientError, MovieApiClient
 from ui_helpers import (
+    gallery_page,
     positive_index_text,
     poster_card_html,
     review_datetime,
@@ -20,6 +21,7 @@ from ui_helpers import (
     sentiment_label,
     sorted_genres,
     total_reviews,
+    verified_poster_image_url,
     weighted_positivity,
 )
 
@@ -146,12 +148,26 @@ with st.sidebar:
         "장르 필터", ["전체 장르", *sorted_genres(movies)], key="genre_filter"
     )
 
+    st.divider()
+    st.caption("데모 자료 및 출처")
+    st.image(str(Path(__file__).parent / "assets" / "tmdb_blue_short.svg"), width=100)
+    st.caption(
+        "실제 영화 27편의 메타데이터와 이미지 출처: TMDB. 리뷰는 분석 기능 시연을 위한 합성 문장입니다."
+    )
+    st.caption("This product uses the TMDB API but is not endorsed or certified by TMDB.")
+    st.markdown("[TMDB 출처 및 저작권 안내](https://www.themoviedb.org/)")
+
 filtered_movies = [
     m
     for m in movies
     if (not search.strip() or search.strip().casefold() in m["title"].casefold())
     and (genre_filter == "전체 장르" or m["genre"] == genre_filter)
 ]
+filter_state = (search.strip(), genre_filter)
+if st.session_state.get("_last_gallery_filters") != filter_state:
+    st.session_state["gallery_page"] = 1
+    st.session_state["_last_gallery_filters"] = filter_state
+
 selected_id = selected_movie_id(movies, st.session_state.get("selected_movie_id"))
 st.session_state["selected_movie_id"] = selected_id
 movie_by_id = {movie["id"]: movie for movie in movies}
@@ -182,9 +198,23 @@ with gallery_tab:
         st.info("검색 조건에 맞는 영화가 없습니다. 필터를 변경해 보세요.")
     else:
         st.caption(f"조회 결과 {len(filtered_movies)}편 / 전체 {len(movies)}편")
-        for start in range(0, len(filtered_movies), 3):
+        pages = max(1, (len(filtered_movies) + 8) // 9)
+        if len(filtered_movies) > 9:
+            if st.session_state.get("gallery_page", 1) > pages:
+                st.session_state["gallery_page"] = 1
+            page_number = st.selectbox(
+                "영화 페이지",
+                options=list(range(1, pages + 1)),
+                format_func=lambda number: f"{number} / {pages} 페이지",
+                key="gallery_page",
+            )
+        else:
+            page_number = 1
+        displayed_movies = gallery_page(filtered_movies, page_number, page_size=9)
+        st.caption(f"{page_number}/{pages} 페이지 · 현재 {len(displayed_movies)}편")
+        for start in range(0, len(displayed_movies), 3):
             columns = st.columns(3, gap="medium")
-            for offset, movie in enumerate(filtered_movies[start : start + 3]):
+            for offset, movie in enumerate(displayed_movies[start : start + 3]):
                 with columns[offset]:
                     with st.container(border=True):
                         st.markdown(
@@ -199,11 +229,14 @@ with gallery_tab:
                         st.caption(
                             "AI 긍정 지수: " + positive_index_text(movie["average_sentiment_score"])
                         )
-                        st.link_button(
-                            "포스터 원본 링크",
-                            movie["poster_url"],
-                            use_container_width=True,
-                        )
+                        if verified_poster_image_url(movie.get("poster_url")):
+                            st.link_button(
+                                "실제 포스터 출처 (TMDB)",
+                                movie["poster_url"],
+                                use_container_width=True,
+                            )
+                        else:
+                            st.caption("가상 영화 · 자체 콘셉트 커버")
                         if st.button(
                             "이 영화 리뷰 보기",
                             key=f"explore_movie_{movie['id']}",
