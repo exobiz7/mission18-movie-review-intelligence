@@ -1,8 +1,14 @@
 # Mission 18 — Movie Review Sentiment Intelligence
 
-**Status (2026-10-11): G0–G5 LOCAL PASS; G6 local security PASS but GitHub-hosted CI BLOCKED by account billing before runner startup; G7 cloud PREDEPLOY LOCAL PASS (isolated Streamlit 37-package install + actual PostgreSQL/KoELECTRA 3 movies × 12 reviews + readonly restart). A Neon Free managed PostgreSQL project now exists with the canonical migration 0001 applied and read-back verified; no hosted FastAPI or Streamlit app is deployed. G8 pending.**
+**Current status (2026-10-18):** GitHub repository **PUBLIC**; Render Free FastAPI + Neon PostgreSQL live; database/model readiness HTTP 200; three fictional movies × 12 synthetic KoELECTRA-scored reviews (36 total); owner-session Streamlit Cloud UI deployed at the canonical URL below. The **anonymous Streamlit access test remains BLOCKED by a sign-in redirect** until the app's public Sharing setting is saved/propagated and independently retested. Mac Studio local release gate on PR #1 commit `82410b7` **PASS**; GitHub Actions **NOT RUN**, G8 PDF candidate exists but final submission is pending.
 
-Canonical local root: `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review`.
+**Reviewer quickstart:** [Current deployment, architecture and verification guide](docs/GRADER_GUIDE_20261018.md).
+
+**Service links:** [Streamlit frontend](https://mission18-movie-review-intelligence-irdbhh5ksnbzv4ag4varjr.streamlit.app/) · [FastAPI Swagger /docs](https://m18-movie-review-api.onrender.com/docs) · [API readiness](https://m18-movie-review-api.onrender.com/readiness).
+
+**Evidence note:** Sections explicitly dated 2026-10-10 through 2026-10-13 below preserve the historical state at those milestones. Their "not yet deployed", "private GitHub" and "empty DB" statements must not be read as the current state.
+
+Developer machine-specific checkout used in historical runs: `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review`. For external reviewers, clone the public repository to any local directory and follow the **Reviewer quickstart** above.
 
 ## Objective
 
@@ -13,7 +19,7 @@ Implement the official **Streamlit + FastAPI** movie/review/sentiment applicatio
 - `frontend/` — G4 responsive cinema gallery and HTTP-only movie/review UI; CSS + safe UI formatting helpers
 - `backend/app/` — FastAPI with 13 actual routes, isolated SQLAlchemy transactions, verified real sentiment adapter
 - `scripts/` — G0–G5 checks and real/model/browser smokes; G6 security smoke, clean-room reinstall, package-license/secret audits
-- `tests/` — 81 current local unit/integration/API/security/UI tests, including G6 public-write policies and fail-closed errors
+- `tests/` — unit/integration/API/security/UI tests, including public-write policy and fail-closed error coverage (run the current suite for the actual test count)
 - `docs/` — architecture/contracts/decisions/evidence
 - `docs/RECONNAISSANCE.md` — **real host observations** and Phase 0 gate
 - `docs/ADR/0001-isolated-bootstrap.md` — bootstrap decision record
@@ -28,7 +34,7 @@ The three original premission guides and previous host recon update remain **unm
 
 - Mac Studio, macOS arm64
 - Dedicated local environment: `.venv` with **Python 3.12.14**, created using existing `uv` offline
-- Local Git repository: `main`; **no GitHub remote is configured**
+- Local Git repository: `main`, tracked against the now **public** GitHub `origin`; historical early-phase notes below describe older states
 - Preferred ports (check availability before running): backend `8000`, Streamlit `8518`
 - Core+dev+optional `ml` and `benchmark` extras installed in isolated M18 `.venv` (109-package lock; includes dev-only Playwright); model, NSMC sources and demo DB are Git-ignored
 - FastAPI 0.143.0, SQLAlchemy 2.1.4, Streamlit 1.65.0, PyTorch 2.14.1 and transformers 4.57.6 verified; real Uvicorn + Streamlit + model E2E PASS
@@ -44,13 +50,13 @@ git status --short --branch
 
 ## Implementation boundary
 
-**Canonical design:** `MISSION18_DETAILED_DESIGN_IMPLEMENTATION_PLAN.md` (v1.8/G6 revision). G6 evidence: `docs/G6_ACCEPTANCE.md`, `docs/G6_PUBLIC_DEPLOYMENT_SECURITY.md` and `docs/evidence/g6_cleanroom_manifest.json`. PyTorch production model remains unchanged.
+**Canonical design:** `MISSION18_DETAILED_DESIGN_IMPLEMENTATION_PLAN.md` (v1.8/G6 revision). G6 evidence: `docs/G6_ACCEPTANCE.md`, `docs/G6_PUBLIC_DEPLOYMENT_SECURITY.md` and `docs/evidence/g6_cleanroom_manifest.json`. The local G3 PyTorch adapter and the G7 hosted ONNX FP32 runtime are independently verified variants.
 
 **Do not copy M13 model checkpoints or M17 direct-storage code into the M18 frontend.** The backend owns DB and inference; reuse patterns after license/contract verification.
 
 ## Next gate
 
-**Next: resolve GitHub Actions account billing authorization, connect deployment providers, obtain hosting plan/visibility approval, then execute G7 HTTPS hosted E2E and G8 PDF/submission.** A dedicated private GitHub repo now exists; hosted CI remains blocked by GitHub before any test step.
+**Next:** independently verify anonymous Streamlit Cloud access after the app owner saves Sharing=Public, run the 4-tab/filter/mobile/read-only E2E, review and merge [PR #1](https://github.com/exobiz7/mission18-movie-review-intelligence/pull/1) after gates pass, then finalize the G8 PDF and submission archive. **GitHub Actions billing resolution is not a prerequisite**: use the documented Mac Studio free-first local release profile; do not trigger billable CI.
 
 ## G1 local checks
 
