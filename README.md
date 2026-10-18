@@ -1,8 +1,8 @@
 # Mission 18 — Movie Review Sentiment Intelligence
 
-**Current status (2026-10-18):** GitHub repository **PUBLIC**; Render Free FastAPI + Neon PostgreSQL live; database/model readiness HTTP 200; three fictional movies × 12 synthetic KoELECTRA-scored reviews (36 total); owner-session Streamlit Cloud UI deployed at the canonical URL below. The **anonymous Streamlit access test remains BLOCKED by a sign-in redirect** until the app's public Sharing setting is saved/propagated and independently retested. Mac Studio local release gate on PR #1 commit `82410b7` **PASS**; GitHub Actions **NOT RUN**, G8 PDF candidate exists but final submission is pending.
+**Current status (2026-10-18):** GitHub repository **PUBLIC**; Render Free FastAPI + Neon PostgreSQL live; database/model readiness HTTP 200; three fictional movies × 12 synthetic KoELECTRA-scored reviews (36 total); public Streamlit Community Cloud **anonymous Chromium E2E 21/21 PASS** across search/genre, four tabs, recent reviews, read-only controls and mobile. PR #1 **SQUASH MERGED** as `d8318fb` after Mac Studio local `release` gate PASS on its head and `change` gate PASS on merged `main`; GitHub Actions **NOT RUN**. G8 technical PDF candidate (39 pages) and package preflight **READY**, with final `{팀명}_{이름}` folder identification and formal submission approval pending.
 
-**Reviewer quickstart:** [Current deployment, architecture and verification guide](docs/GRADER_GUIDE_20261018.md).
+**Reviewer quickstart:** [Current deployment and reproduction](docs/GRADER_GUIDE_20261018.md) · [G7 accepted public browser evidence](docs/G7_PUBLIC_CLOUD_ACCEPTANCE_20261018.md).
 
 **Service links:** [Streamlit frontend](https://mission18-movie-review-intelligence-irdbhh5ksnbzv4ag4varjr.streamlit.app/) · [FastAPI Swagger /docs](https://m18-movie-review-api.onrender.com/docs) · [API readiness](https://m18-movie-review-api.onrender.com/readiness).
 
@@ -56,7 +56,7 @@ git status --short --branch
 
 ## Next gate
 
-**Next:** independently verify anonymous Streamlit Cloud access after the app owner saves Sharing=Public, run the 4-tab/filter/mobile/read-only E2E, review and merge [PR #1](https://github.com/exobiz7/mission18-movie-review-intelligence/pull/1) after gates pass, then finalize the G8 PDF and submission archive. **GitHub Actions billing resolution is not a prerequisite**: use the documented Mac Studio free-first local release profile; do not trigger billable CI.
+**Next:** confirm the exact `{팀명}_{이름}` submission identifier, complete the G8 archive with the full 13 Swagger captures, 7 public Cloud and 5 current live-data UI screenshots, then validate and deliver the named PDF/ZIP. **G7 anonymous Cloud and PR #1 are already accepted/merged. GitHub Actions billing is not a prerequisite**: do not start billable CI.
 
 ## G1 local checks
 
