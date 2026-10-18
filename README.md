@@ -1,8 +1,8 @@
 # Mission 18 — Movie Review Sentiment Intelligence
 
-**Current status (2026-10-18):** GitHub repository **PUBLIC**; Render Free FastAPI + Neon PostgreSQL live; database/model readiness HTTP 200; three fictional movies × 12 synthetic KoELECTRA-scored reviews (36 total); public Streamlit Community Cloud **anonymous Chromium E2E 21/21 PASS** across search/genre, four tabs, recent reviews, read-only controls and mobile. PR #1 **SQUASH MERGED** as `d8318fb` after Mac Studio local `release` gate PASS on its head and `change` gate PASS on merged `main`; GitHub Actions **NOT RUN**. G8 technical PDF candidate (39 pages) and package preflight **READY**, with final `{팀명}_{이름}` folder identification and formal submission approval pending.
+**Current status (2026-10-18):** GitHub **PUBLIC**; Render Free FastAPI + Neon PostgreSQL live, database/model ready; **30 movies / 360 synthetic KoELECTRA-scored reviews** (27 real TMDB-metadata movies with verified externally hosted actual posters + 3 historical fictional demos with concept covers). Streamlit Community Cloud **anonymous Chromium E2E 29/29 PASS**, including 9-per-page gallery (4 pages), real poster display, Korean search, 11 genres, reviews/recent ten, disabled writes and mobile. Current weighted AI positivity **52.9/100**, **not a viewer star rating**. Mac Studio full local free-first release on demo30 PR #2 **PASS (148 pytest)**, Cloud ImportError resolved via PR #3, hosted GitHub Actions **NOT RUN**. Final submission identity **미션18_2팀_이형기** and evidence ZIP/PDF are the G8 deliverables.
 
-**Reviewer quickstart:** [Current deployment and reproduction](docs/GRADER_GUIDE_20261018.md) · [G7 accepted public browser evidence](docs/G7_PUBLIC_CLOUD_ACCEPTANCE_20261018.md).
+**Reviewer quickstart:** [Current deployment and reproduction](docs/GRADER_GUIDE_20261018.md) · [G8 30-film final acceptance](docs/G8_DEMO30_FINAL_ACCEPTANCE_20261018.md) · [Historical G7 acceptance](docs/G7_PUBLIC_CLOUD_ACCEPTANCE_20261018.md).
 
 **Service links:** [Streamlit frontend](https://mission18-movie-review-intelligence-irdbhh5ksnbzv4ag4varjr.streamlit.app/) · [FastAPI Swagger /docs](https://m18-movie-review-api.onrender.com/docs) · [API readiness](https://m18-movie-review-api.onrender.com/readiness).
 
@@ -56,7 +56,7 @@ git status --short --branch
 
 ## Next gate
 
-**Next:** confirm the exact `{팀명}_{이름}` submission identifier, complete the G8 archive with the full 13 Swagger captures, 7 public Cloud and 5 current live-data UI screenshots, then validate and deliver the named PDF/ZIP. **G7 anonymous Cloud and PR #1 are already accepted/merged. GitHub Actions billing is not a prerequisite**: do not start billable CI.
+**Final G8:** Submit under `미션18/미션18_2팀_이형기/` with source code, real 30-film/360-review Cloud evidence (8 screenshots, anonymous E2E 29/29), 13 Swagger captures, provenance catalog, ERD and PDF report. Old G7 screenshots are historical. **No GitHub Actions or paid CI required.**
 
 ## G1 local checks
 
