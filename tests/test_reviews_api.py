@@ -276,3 +276,71 @@ def test_inference_movie_delete_race_no_orphan(
         assert client.get("/reviews").json() == []
     finally:
         app.dependency_overrides.pop(get_analyzer, None)
+
+
+def test_global_reviews_filter_combination_and_offset(model_client: TestClient):
+    """The existing GET /reviews can serve an unbounded filtered recent feed."""
+    titles = [
+        ("우주_별", "SF"),
+        ("우주X별", "SF"),
+        ("우주%별", "SF"),
+        ("일상 영화", "드라마"),
+    ]
+    ids = []
+    for title, genre in titles:
+        response = model_client.post("/movies", json={**MOVIE, "title": title, "genre": genre})
+        assert response.status_code == 201
+        ids.append(response.json()["id"])
+    for n, movie_id in enumerate(ids):
+        for i in range(n + 2):
+            send_review(model_client, movie_id, f"정상 리뷰 {n}-{i}")
+    recent = model_client.get("/reviews", params={"limit": 100}).json()
+    assert len(recent) == sum(n + 2 for n in range(4))
+    movie = model_client.get("/reviews", params={"movie_id": ids[1]}).json()
+    assert len(movie) == 3 and all(r["movie_id"] == ids[1] for r in movie)
+    assert len(model_client.get("/reviews", params={"movie_query": "우주"}).json()) == 9
+    assert len(model_client.get("/reviews", params={"genre": "SF"}).json()) == 9
+    assert len(model_client.get("/reviews", params={"genre": "드라마"}).json()) == 5
+    assert len(model_client.get("/reviews", params={"movie_query": "우주_"}).json()) == 2
+    assert len(model_client.get("/reviews", params={"movie_query": "우주%"}).json()) == 4
+    only_one = model_client.get(
+        "/reviews", params={"movie_id": ids[1], "genre": "SF", "movie_query": "우주X별"}
+    ).json()
+    assert len(only_one) == 3 and all(r["movie_id"] == ids[1] for r in only_one)
+    assert (
+        model_client.get(
+            "/reviews",
+            params={
+                "movie_id": ids[1],
+                "genre": "드라마",
+            },
+        ).json()
+        == []
+    )
+    page1 = model_client.get(
+        "/reviews", params={"movie_query": "우주", "limit": 3, "offset": 0}
+    ).json()
+    page2 = model_client.get(
+        "/reviews", params={"movie_query": "우주", "limit": 3, "offset": 3}
+    ).json()
+    assert len(page1) == len(page2) == 3
+    assert not ({x["id"] for x in page1} & {x["id"] for x in page2})
+    assert [x["id"] for x in page1 + page2] == [
+        x["id"] for x in recent if x["movie_id"] in ids[:3]
+    ][:6]
+    # Historical /reviews/recent remains precisely limited to ten.
+    assert model_client.get("/reviews/recent", params={"limit": 11}).status_code == 422
+
+
+@pytest.mark.parametrize(
+    "params",
+    [
+        {"movie_id": 0},
+        {"genre": "S" * 81},
+        {"movie_query": "x" * 201},
+        {"limit": 101},
+        {"offset": -1},
+    ],
+)
+def test_filter_validation_fail_closed(model_client: TestClient, params):
+    assert model_client.get("/reviews", params=params).status_code == 422

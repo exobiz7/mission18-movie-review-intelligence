@@ -22,11 +22,14 @@ def fake_app(*, movies=3, reviews=36, readonly=True):
         success=[Obj(value="서버·AI 모델 연결 정상")],
         info=[Obj(value="읽기 전용 데모: 변경 불가")],
         metric=[metric("등록된 영화", f"{movies}편"), metric("등록된 리뷰", f"{reviews}건")],
-        tabs=[
-            Obj(label=v) for v in ("영화 둘러보기", "리뷰 작성·분석", "최근 리뷰 10개", "영화 관리")
+        segmented_control=[
+            Obj(options=["영화 둘러보기", "리뷰 보기·감성분석", "리뷰 작성", "최근 리뷰"])
         ],
         button=[
             *[button("이 영화 리뷰 보기", False) for _ in range(movies)],
+            *[button("리뷰 작성하기", False) for _ in range(movies)],
+            button("영화 등록·관리", False),
+            button("영화 삭제 (주의)", False),
             button("영화 등록", readonly),
             button("리뷰 등록·분석", readonly),
             button("선택한 영화 삭제", readonly),
@@ -38,7 +41,7 @@ def test_seeded_three_movies_and_thirty_six_reviews_readonly_pass():
     result = verify_seeded_live_ui(fake_app())
     assert result["movie_count"] == 3
     assert result["review_count"] == 36
-    assert result["readonly_actions_disabled"]
+    assert result["primary_navigation_verified"]
 
 
 @pytest.mark.parametrize("movies,reviews", [(0, 0), (2, 40), (3, 29), (50, 600)])
@@ -59,10 +62,10 @@ def test_missing_backend_connection_rejected():
         verify_seeded_live_ui(app)
 
 
-def test_critical_tabs_required():
+def test_critical_primary_navigation_required():
     app = fake_app()
-    app.tabs.pop()
-    with pytest.raises(AssertionError, match="required tabs"):
+    app.segmented_control[0].options.pop()
+    with pytest.raises(AssertionError, match="required primary navigation"):
         verify_seeded_live_ui(app)
 
 

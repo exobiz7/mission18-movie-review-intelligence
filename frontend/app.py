@@ -1,6 +1,6 @@
-"""Mission18 G4: accessible gallery, live AI review workspace and controlled CRUD.
+"""CINÉ SIGNAL: connected movie gallery, review exploration and controlled CRUD.
 
-Only FastAPI HTTP is used for persistent data and model inference.
+Streamlit owns UI navigation only; FastAPI owns inference and persistence.
 """
 
 from __future__ import annotations
@@ -13,8 +13,7 @@ from urllib.parse import urlsplit
 
 import streamlit as st
 
-# Streamlit Cloud may have a cached/unrelated generic "ui_helpers" module.
-# Resolve our canonical frontend package from this checkout deterministically.
+# Avoid an unrelated cached "ui_helpers" module on Streamlit Community Cloud.
 _PROJECT_ROOT = str(Path(__file__).resolve().parents[1])
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
@@ -32,6 +31,13 @@ from frontend.ui_helpers import (  # noqa: E402
     verified_poster_image_url,
     weighted_positivity,
 )
+from frontend.ux_helpers import (  # noqa: E402
+    ADMIN_PAGES,
+    MAIN_PAGES,
+    RECENT_BATCH,
+    filtered_movie_options,
+    get_progressive_reviews,
+)
 
 st.set_page_config(
     page_title="CINÉ SIGNAL · Movie Review Intelligence",
@@ -43,9 +49,9 @@ st.markdown(
     f"<style>{Path(__file__).with_name('styles.css').read_text(encoding='utf-8')}</style>",
     unsafe_allow_html=True,
 )
+
 api = MovieApiClient()
-# A server-side backend bearer token is NOT visitor authentication.
-# Remote/public demo clients default to read-only, even with a write token.
+# A server-side admin bearer token does not authenticate anonymous visitors.
 ui_read_only = (
     os.environ.get("FRONTEND_READ_ONLY", "").lower() in {"1", "true", "yes", "on"}
     or os.environ.get("PUBLIC_DEPLOYMENT", "").lower() in {"1", "true", "yes", "on"}
@@ -59,6 +65,34 @@ def show_error(prefix: str, exc: ApiClientError) -> None:
 
 def flash(message: str) -> None:
     st.session_state["m18_flash"] = message
+
+
+def navigate_to(page: str, movie_id: int | None = None) -> None:
+    """Streamlit button callback: update the route before widgets render."""
+    if page not in (*MAIN_PAGES, *ADMIN_PAGES):
+        raise ValueError("Unrecognized navigation target")
+    st.session_state["m18_route"] = page
+    if page in MAIN_PAGES:
+        # Forms can submit after this navigation widget was instantiated.
+        # Apply its controlled selection at the start of the NEXT rerun.
+        st.session_state["_m18_pending_primary_route"] = page
+    if movie_id is not None:
+        st.session_state["selected_movie_id"] = movie_id
+        if page in {"리뷰 보기·감성분석", "리뷰 작성"}:
+            prefix = "view" if page == "리뷰 보기·감성분석" else "compose"
+            # The card's movie must override an old page-local search/filter.
+            for suffix in ("_title_query", "_genre", "_movie", "_choices"):
+                st.session_state.pop(prefix + suffix, None)
+
+
+def update_primary_route() -> None:
+    choice = st.session_state.get("m18_primary_navigation")
+    if choice in MAIN_PAGES:
+        st.session_state["m18_route"] = choice
+
+
+def load_next_twenty(state_key: str) -> None:
+    st.session_state[state_key] = int(st.session_state.get(state_key, RECENT_BATCH)) + RECENT_BATCH
 
 
 def render_review_details(review: dict, *, allow_delete: bool = False) -> None:
@@ -98,13 +132,55 @@ def render_review_details(review: dict, *, allow_delete: bool = False) -> None:
                         st.rerun()
 
 
+def choose_movie(movies: list[dict], scope: str) -> int | None:
+    """Independent title+genre filters and dropdown on each review page."""
+    a, b = st.columns([3, 2])
+    with a:
+        query = st.text_input(
+            "영화 제목 검색",
+            placeholder="제목 일부를 입력한 뒤 Enter",
+            key=f"{scope}_title_query",
+            max_chars=100,
+        )
+    with b:
+        genre = st.selectbox(
+            "장르 필터",
+            ["전체 장르", *sorted_genres(movies)],
+            key=f"{scope}_genre",
+        )
+    matches = filtered_movie_options(
+        movies, query=query, genre=None if genre == "전체 장르" else genre
+    )
+    if not matches:
+        st.info("검색 조건에 맞는 영화가 없습니다. 제목 또는 장르를 변경하세요.")
+        return None
+    ids = [movie["id"] for movie in matches]
+    choices = tuple(ids)
+    if st.session_state.get(f"{scope}_choices") != choices:
+        st.session_state.pop(f"{scope}_movie", None)
+        st.session_state[f"{scope}_choices"] = choices
+    preferred = st.session_state.get("selected_movie_id")
+    index = ids.index(preferred) if preferred in ids else 0
+    names = {movie["id"]: movie["title"] for movie in matches}
+    chosen_id = st.selectbox(
+        "영화 선택",
+        ids,
+        index=index,
+        format_func=lambda mid: names[mid],
+        key=f"{scope}_movie",
+    )
+    st.caption(f"검색 결과 {len(matches)}편")
+    st.session_state["selected_movie_id"] = chosen_id
+    return chosen_id
+
+
 st.markdown(
     """
     <section class="m18-hero" aria-label="서비스 소개">
       <span class="m18-kicker">CINÉ SIGNAL · MOVIE INTELLIGENCE</span>
       <h1>영화의 반응을, 데이터로 읽다.</h1>
       <p>한국어 영화 리뷰를 AI가 긍정·부정으로 분석하는 서비스입니다.
-      영화별 긍정 지수와 최근 리뷰를 둘러보세요.</p>
+      영화별 긍정 지수와 리뷰를 둘러보세요.</p>
     </section>
     """,
     unsafe_allow_html=True,
@@ -114,17 +190,37 @@ if notice:
     st.success(notice)
 
 with st.sidebar:
-    st.header("탐색 필터")
-    search = st.text_input(
-        "영화 제목 검색",
-        placeholder="영화 제목을 검색하세요",
-        key="movie_query",
-        help="등록된 영화 제목 일부로 검색합니다. Enter 키로 적용할 수 있습니다.",
-    )
-    st.caption("AI 긍정 지수는 관람객 별점이 아니라 AI 모델의 긍정 확률 평균입니다.")
+    st.header("CINÉ SIGNAL")
+    st.caption("영화 검색·장르 필터는 각 화면에서 독립적으로 작동합니다.")
+    st.divider()
+    with st.expander("관리자 기능", expanded=False):
+        st.caption("일반 탐색과 구분되는 영화 등록·삭제 영역입니다.")
+        st.button(
+            "영화 등록·관리",
+            key="sidebar_register",
+            use_container_width=True,
+            on_click=navigate_to,
+            args=("영화 등록",),
+        )
+        st.button(
+            "영화 삭제 (주의)",
+            key="sidebar_delete",
+            use_container_width=True,
+            on_click=navigate_to,
+            args=("영화 삭제",),
+        )
+        if ui_read_only:
+            st.caption("공개 데모에서는 등록·삭제가 비활성화됩니다.")
     st.divider()
     st.caption("모델: KoELECTRA Small · NSMC")
+    st.caption("AI 긍정 지수는 평균 예측 확률이며 관람객 별점이 아닙니다.")
     st.caption("모든 저장 및 AI 분석은 FastAPI가 담당합니다.")
+    st.divider()
+    st.image(str(Path(__file__).parent / "assets" / "tmdb_blue_short.svg"), width=100)
+    st.caption("실제 영화 27편의 메타데이터·포스터 출처: TMDB")
+    st.caption("리뷰는 모델 시연을 위한 합성 문장입니다.")
+    st.caption("This product uses the TMDB API but is not endorsed or certified by TMDB.")
+    st.markdown("[TMDB 출처·저작권](https://www.themoviedb.org/)")
 
 with st.spinner("무료 서버 연결 중입니다. 휴면 상태였다면 1분 이상 걸릴 수 있습니다…"):
     backend_online = api.health()
@@ -136,7 +232,7 @@ if backend_online:
         st.warning("백엔드 연결 정상, AI 모델 미준비: /readiness 상태를 확인하세요.")
 else:
     ready = False
-    st.error("백엔드 연결 실패: API_BASE_URL 및 FastAPI 실행 상태를 확인한 뒤 새로고침하세요.")
+    st.error("백엔드 연결 실패: API_BASE_URL 및 FastAPI 실행 상태를 확인하세요.")
 
 try:
     movies = api.movies() if backend_online else []
@@ -148,82 +244,100 @@ except ApiClientError as exc:
 
 if ui_read_only:
     st.info(
-        "읽기 전용 데모: 공개 방문자의 무단 변경을 방지하기 위해 등록·삭제가 비활성화되었습니다."
+        "읽기 전용 데모: 영화·리뷰를 탐색할 수 있지만, 공개 방문자의 무단 변경을 "
+        "방지하기 위해 등록·삭제가 비활성화되었습니다."
     )
 
-with st.sidebar:
-    genre_filter = st.selectbox(
-        "장르 필터", ["전체 장르", *sorted_genres(movies)], key="genre_filter"
-    )
-
-    st.divider()
-    st.caption("데모 자료 및 출처")
-    st.image(str(Path(__file__).parent / "assets" / "tmdb_blue_short.svg"), width=100)
-    st.caption(
-        "실제 영화 27편의 메타데이터와 이미지 출처: TMDB. 리뷰는 분석 기능 시연을 위한 합성 문장입니다."
-    )
-    st.caption("This product uses the TMDB API but is not endorsed or certified by TMDB.")
-    st.markdown("[TMDB 출처 및 저작권 안내](https://www.themoviedb.org/)")
-
-filtered_movies = [
-    m
-    for m in movies
-    if (not search.strip() or search.strip().casefold() in m["title"].casefold())
-    and (genre_filter == "전체 장르" or m["genre"] == genre_filter)
-]
-filter_state = (search.strip(), genre_filter)
-if st.session_state.get("_last_gallery_filters") != filter_state:
-    st.session_state["gallery_page"] = 1
-    st.session_state["_last_gallery_filters"] = filter_state
-
-selected_id = selected_movie_id(movies, st.session_state.get("selected_movie_id"))
-st.session_state["selected_movie_id"] = selected_id
+st.session_state["selected_movie_id"] = selected_movie_id(
+    movies, st.session_state.get("selected_movie_id")
+)
 movie_by_id = {movie["id"]: movie for movie in movies}
 
 if backend_online:
-    c1, c2, c3 = st.columns(3)
-    c1.metric("등록된 영화", f"{len(movies)}편", help="현재 조회한 최대 50편 기준")
-    c2.metric("등록된 리뷰", f"{total_reviews(movies):,}건")
-    c3.metric("AI 긍정 지수", positive_index_text(weighted_positivity(movies)))
-    st.caption("현재 목록 기준 리뷰 가중평균으로, 관람객 별점이 아닙니다.")
+    a, b, c = st.columns(3)
+    a.metric("등록된 영화", f"{len(movies)}편", help="현재 목록 최대 50편 기준")
+    b.metric("등록된 리뷰", f"{total_reviews(movies):,}건")
+    c.metric("AI 긍정 지수", positive_index_text(weighted_positivity(movies)))
+    st.caption("현재 목록의 리뷰 가중평균이며 관람객 별점이 아닙니다.")
 
-gallery_tab, review_tab, recent_tab, manage_tab = st.tabs(
-    ["영화 둘러보기", "리뷰 작성·분석", "최근 리뷰 10개", "영화 관리"]
-)
+st.session_state.setdefault("m18_route", MAIN_PAGES[0])
+route = st.session_state["m18_route"]
+if route not in (*MAIN_PAGES, *ADMIN_PAGES):
+    route = MAIN_PAGES[0]
+    st.session_state["m18_route"] = route
 
-with gallery_tab:
-    st.subheader("영화 갤러리")
-    st.caption("제목 또는 장르를 탐색한 뒤 원하는 영화의 리뷰를 확인하세요.")
-    if not backend_online:
-        st.info("영화 데이터를 불러올 수 없습니다. 백엔드 연결을 확인하세요.")
-    elif not movies:
-        st.info(
-            "아직 공개된 영화 데이터가 없습니다. 운영자가 데이터를 준비하면 여기에서 확인할 수 있습니다."
-            if ui_read_only
-            else "등록된 영화가 없습니다. ‘영화 관리’에서 첫 영화를 추가하세요."
+if route in MAIN_PAGES:
+    pending = st.session_state.pop("_m18_pending_primary_route", None)
+    if pending in MAIN_PAGES:
+        st.session_state["m18_primary_navigation"] = pending
+    # Unlike st.tabs, selected navigation can be set by an on_click callback.
+    st.segmented_control(
+        "주요 화면",
+        MAIN_PAGES,
+        default=MAIN_PAGES[0],
+        key="m18_primary_navigation",
+        on_change=update_primary_route,
+        width="stretch",
+        wrap=True,
+        label_visibility="collapsed",
+    )
+else:
+    st.caption("관리자 영역 · 일반 영화 탐색과 분리된 관리 화면")
+    st.button("← 영화 둘러보기", on_click=navigate_to, args=(MAIN_PAGES[0],))
+
+if route == "영화 둘러보기":
+    st.subheader("영화 둘러보기")
+    st.caption("영화를 선택하면 해당 영화 리뷰 열람 또는 리뷰 작성 화면으로 바로 이동합니다.")
+    first, second = st.columns([3, 2])
+    with first:
+        query = st.text_input(
+            "영화 제목 검색",
+            placeholder="영화 제목을 검색하세요",
+            key="gallery_title_query",
+            max_chars=100,
         )
-    elif not filtered_movies:
-        st.info("검색 조건에 맞는 영화가 없습니다. 필터를 변경해 보세요.")
+    with second:
+        genre_choice = st.selectbox(
+            "장르 필터",
+            ["전체 장르", *sorted_genres(movies)],
+            key="gallery_genre",
+        )
+    filtered = filtered_movie_options(
+        movies,
+        query=query,
+        genre=None if genre_choice == "전체 장르" else genre_choice,
+    )
+    sig = (query.strip(), genre_choice)
+    if st.session_state.get("_last_gallery_filters") != sig:
+        st.session_state["gallery_page"] = 1
+        st.session_state["_last_gallery_filters"] = sig
+
+    if not backend_online:
+        st.warning("영화 목록을 불러올 수 없습니다.")
+    elif not movies:
+        st.info("아직 공개된 영화 데이터가 없습니다.")
+    elif not filtered:
+        st.info("검색 조건에 맞는 영화가 없습니다.")
     else:
-        st.caption(f"조회 결과 {len(filtered_movies)}편 / 전체 {len(movies)}편")
-        pages = max(1, (len(filtered_movies) + 8) // 9)
-        if len(filtered_movies) > 9:
+        st.caption(f"조회 결과 {len(filtered)}편 / 전체 {len(movies)}편")
+        pages = max(1, (len(filtered) + 8) // 9)
+        if len(filtered) > 9:
             if st.session_state.get("gallery_page", 1) > pages:
                 st.session_state["gallery_page"] = 1
             page_number = st.selectbox(
                 "영화 페이지",
                 options=list(range(1, pages + 1)),
-                format_func=lambda number: f"{number} / {pages} 페이지",
+                format_func=lambda n: f"{n} / {pages} 페이지",
                 key="gallery_page",
             )
         else:
             page_number = 1
-        displayed_movies = gallery_page(filtered_movies, page_number, page_size=9)
-        st.caption(f"{page_number}/{pages} 페이지 · 현재 {len(displayed_movies)}편")
-        for start in range(0, len(displayed_movies), 3):
-            columns = st.columns(3, gap="medium")
-            for offset, movie in enumerate(displayed_movies[start : start + 3]):
-                with columns[offset]:
+        shown = gallery_page(filtered, page_number, page_size=9)
+        st.caption(f"{page_number}/{pages} 페이지 · 현재 {len(shown)}편")
+        for start in range(0, len(shown), 3):
+            cols = st.columns(3, gap="medium")
+            for offset, movie in enumerate(shown[start : start + 3]):
+                with cols[offset]:
                     with st.container(border=True):
                         st.markdown(
                             poster_card_html(movie, start + offset),
@@ -245,210 +359,302 @@ with gallery_tab:
                             )
                         else:
                             st.caption("가상 영화 · 자체 콘셉트 커버")
-                        if st.button(
+                        st.button(
                             "이 영화 리뷰 보기",
-                            key=f"explore_movie_{movie['id']}",
+                            key=f"gallery_view_{movie['id']}",
+                            type="primary",
                             use_container_width=True,
-                        ):
-                            st.session_state["selected_movie_id"] = movie["id"]
-                            st.info("선택했습니다. ‘리뷰 작성·분석’ 탭으로 이동해 주세요.")
+                            on_click=navigate_to,
+                            args=("리뷰 보기·감성분석", movie["id"]),
+                        )
+                        st.button(
+                            "리뷰 작성하기",
+                            key=f"gallery_compose_{movie['id']}",
+                            use_container_width=True,
+                            on_click=navigate_to,
+                            args=("리뷰 작성", movie["id"]),
+                        )
 
-with review_tab:
-    st.subheader("리뷰 등록 및 AI 감성 분석")
+elif route == "리뷰 보기·감성분석":
+    st.subheader("리뷰 보기 · AI 감성분석")
+    st.caption("영화 제목·장르를 검색하거나 영화 목록에서 선택하세요.")
     if not movies:
-        st.info(
-            "현재 등록된 영화가 없어 리뷰 조회가 비어 있습니다. 공개 데모는 읽기 전용입니다."
-            if ui_read_only
-            else "영화를 먼저 등록한 뒤 리뷰를 작성할 수 있습니다."
-        )
+        st.info("조회할 영화가 없습니다.")
     else:
-        option_ids = [movie["id"] for movie in movies]
-        position = option_ids.index(selected_id) if selected_id in option_ids else 0
-        display_names = {
-            movie["id"]: f"{movie['title']} (영화 ID {movie['id']})" for movie in movies
-        }
-        chosen_id = st.selectbox(
-            "리뷰 작성 대상 영화",
-            options=option_ids,
-            index=position,
-            format_func=lambda movie_id: display_names[movie_id],
-            key="review_movie_select",
-        )
-        st.session_state["selected_movie_id"] = chosen_id
-        selected = movie_by_id[chosen_id]
-        st.caption(
-            f"**{selected['title']}** · 감독 {selected['director']} · "
-            f"{selected['release_date']} 개봉"
-        )
-        if not ready:
-            st.warning("AI 모델을 사용할 수 없습니다. 신규 리뷰 분석은 일시 중지됩니다.")
-        with st.form("review_create_form", clear_on_submit=False):
-            author = st.text_input("작성자", max_chars=80, placeholder="닉네임")
-            content = st.text_area(
-                "리뷰 내용",
-                max_chars=2000,
-                height=115,
-                placeholder="영화의 좋았던 점과 아쉬웠던 점을 구체적으로 남겨주세요.",
+        movie_id = choose_movie(movies, "view")
+        if movie_id is not None:
+            movie = movie_by_id[movie_id]
+            st.caption(
+                f"**{movie['title']}** · 감독 {movie['director']} · {movie['release_date']} 개봉"
             )
-            posted = st.form_submit_button(
-                "리뷰 등록·분석", type="primary", disabled=not ready or ui_read_only
-            )
-        if posted:
-            if not author.strip() or not content.strip():
-                st.error("작성자와 리뷰 내용을 모두 입력해 주세요.")
+            try:
+                with st.spinner("영화별 리뷰·AI 감성 집계 조회 중…"):
+                    summary = api.sentiment_summary(movie_id)
+                    if st.session_state.get("_view_last_movie") != movie_id:
+                        st.session_state["_view_last_movie"] = movie_id
+                        st.session_state["view_visible_count"] = RECENT_BATCH
+                    rows, more = get_progressive_reviews(
+                        api,
+                        visible_count=st.session_state.get("view_visible_count", RECENT_BATCH),
+                        movie_id=movie_id,
+                    )
+            except ApiClientError as exc:
+                show_error("리뷰/집계 조회 실패", exc)
             else:
-                with st.spinner("실제 AI 모델로 리뷰를 분석하고 저장하는 중입니다…"):
-                    try:
-                        result = api.create_review(
-                            {
-                                "movie_id": chosen_id,
-                                "author": author.strip(),
-                                "content": content.strip(),
-                            }
-                        )
-                    except ApiClientError as exc:
-                        show_error("리뷰 등록/분석 실패", exc)
-                    else:
-                        flash(
-                            "리뷰가 저장됐습니다. "
-                            f"AI 판단: {sentiment_label(result['sentiment_label'])}, "
-                            f"긍정 확률 {result['sentiment_score'] * 100:.1f}%."
-                        )
-                        st.rerun()
-
-        st.divider()
-        st.subheader("영화별 AI 긍정 지수")
-        try:
-            with st.spinner("리뷰·감성 집계를 불러오는 중입니다…"):
-                summary = api.sentiment_summary(chosen_id)
-                movie_reviews = api.reviews(movie_id=chosen_id, limit=50)
-        except ApiClientError as exc:
-            show_error("리뷰/집계 조회 실패", exc)
-        else:
-            left, mid, right = st.columns(3)
-            left.metric("리뷰 수", str(summary["review_count"]))
-            mid.metric(
-                "긍정 / 부정",
-                f"{summary['positive_count']} / {summary['negative_count']}",
-            )
-            right.metric(
-                "AI 긍정 지수",
-                positive_index_text(summary["average_sentiment_score"]),
-            )
-            st.markdown(
-                '<div class="m18-result"><p>'
-                "AI 긍정 지수는 <strong>각 리뷰의 P(긍정) 평균</strong>입니다. "
-                "실제 관람객 별점이나 검증된 만족도 점수가 아닙니다."
-                "</p></div>",
-                unsafe_allow_html=True,
-            )
-            if summary["review_count"] == 0:
-                st.info(
-                    "아직 표시할 분석 결과가 없습니다. 공개 화면에서는 새 리뷰를 등록할 수 없습니다."
-                    if ui_read_only
-                    else "등록된 리뷰가 없습니다. 첫 리뷰를 작성해 AI 분석을 시작하세요."
+                left, mid, right = st.columns(3)
+                left.metric("리뷰 수", str(summary["review_count"]))
+                mid.metric(
+                    "긍정 / 부정",
+                    f"{summary['positive_count']} / {summary['negative_count']}",
                 )
-            else:
+                right.metric(
+                    "AI 긍정 지수",
+                    positive_index_text(summary["average_sentiment_score"]),
+                )
+                st.markdown(
+                    '<div class="m18-result"><p>'
+                    "AI 긍정 지수는 <strong>각 리뷰의 P(긍정) 평균</strong>입니다. "
+                    "실제 관람객 별점이나 검증된 만족도 점수가 아닙니다."
+                    "</p></div>",
+                    unsafe_allow_html=True,
+                )
                 st.subheader("선택한 영화의 리뷰")
-                st.caption(
-                    f"최신 {len(movie_reviews)}건 표시 "
-                    f"(전체 {summary['review_count']}건, 최대 50건)"
-                )
-                for review in movie_reviews:
+                st.caption(f"최신 {len(rows)}건 / 전체 {summary['review_count']}건")
+                if not rows:
+                    st.info("등록된 리뷰가 없습니다.")
+                for review in rows:
                     render_review_details(review, allow_delete=True)
+                if more:
+                    st.button(
+                        "리뷰 20건 더보기",
+                        key="view_more_reviews",
+                        on_click=load_next_twenty,
+                        args=("view_visible_count",),
+                    )
+                st.divider()
+                st.button(
+                    "이 영화 리뷰 작성하기",
+                    key="view_compose_button",
+                    type="primary",
+                    on_click=navigate_to,
+                    args=("리뷰 작성", movie_id),
+                )
 
-with recent_tab:
-    st.subheader("최근 등록된 리뷰 10개")
-    st.caption("전체 영화의 리뷰 중 최신 10개를 등록 시각·ID 역순으로 표시합니다.")
-    if not backend_online:
-        st.warning("최근 리뷰를 불러오려면 백엔드 연결이 필요합니다.")
+elif route == "리뷰 작성":
+    st.subheader("리뷰 작성")
+    st.caption("영화 제목 검색·장르 필터·영화 선택을 모두 사용할 수 있습니다.")
+    if not movies:
+        st.info("등록된 영화가 없어 리뷰를 작성할 수 없습니다.")
     else:
+        movie_id = choose_movie(movies, "compose")
+        if movie_id is not None:
+            movie = movie_by_id[movie_id]
+            st.caption(f"선택한 영화: **{movie['title']}** · {movie['genre']}")
+            if ui_read_only:
+                st.info(
+                    "공개 데모는 읽기 전용이므로 신규 리뷰의 저장·추론이 비활성화되어 있습니다. "
+                    "기존 AI 분석 결과는 '리뷰 보기·감성분석'에서 확인해 주세요."
+                )
+            elif not ready:
+                st.warning("AI 모델을 사용할 수 없습니다. 신규 리뷰 분석이 일시 중지됩니다.")
+            with st.form("review_create_form", clear_on_submit=False):
+                author = st.text_input(
+                    "작성자",
+                    max_chars=80,
+                    placeholder="닉네임",
+                    disabled=ui_read_only,
+                )
+                content = st.text_area(
+                    "리뷰 내용",
+                    max_chars=2000,
+                    height=150,
+                    placeholder="좋았던 점과 아쉬웠던 점을 구체적으로 남겨주세요.",
+                    disabled=ui_read_only,
+                )
+                submitted = st.form_submit_button(
+                    "리뷰 등록·분석",
+                    type="primary",
+                    disabled=not backend_online or not ready or ui_read_only,
+                )
+            if submitted:
+                if not author.strip() or not content.strip():
+                    st.error("작성자와 리뷰 내용을 모두 입력해 주세요.")
+                else:
+                    with st.spinner("실제 AI 모델로 분석·저장 중…"):
+                        try:
+                            result = api.create_review(
+                                {
+                                    "movie_id": movie_id,
+                                    "author": author.strip(),
+                                    "content": content.strip(),
+                                }
+                            )
+                        except ApiClientError as exc:
+                            show_error("리뷰 등록·분석 실패", exc)
+                        else:
+                            flash(
+                                "리뷰 저장·분석 완료 · "
+                                f"{sentiment_label(result['sentiment_label'])} / "
+                                f"긍정 확률 {result['sentiment_score'] * 100:.1f}%"
+                            )
+                            navigate_to("리뷰 보기·감성분석", movie_id)
+                            st.rerun()
+            st.button(
+                "선택한 영화 리뷰 보기",
+                key="compose_to_view",
+                on_click=navigate_to,
+                args=("리뷰 보기·감성분석", movie_id),
+            )
+
+elif route == "최근 리뷰":
+    st.subheader("최근 리뷰")
+    st.caption("전체 리뷰를 최신순으로 표시합니다. 아래 더보기로 20건씩 계속 불러올 수 있습니다.")
+    if not backend_online or not movies:
+        st.info("영화 리뷰를 불러올 수 없습니다.")
+    else:
+        first, second = st.columns([3, 2])
+        with first:
+            query = st.text_input(
+                "영화 제목 검색",
+                key="recent_title_query",
+                placeholder="제목 일부 입력",
+                max_chars=100,
+            )
+        with second:
+            selected_genre = st.selectbox(
+                "장르 필터",
+                ["전체 장르", *sorted_genres(movies)],
+                key="recent_genre",
+            )
+        genre = None if selected_genre == "전체 장르" else selected_genre
+        matching = filtered_movie_options(movies, query=query, genre=genre)
+        names = {m["id"]: m["title"] for m in matching}
+        options = [None, *(m["id"] for m in matching)]
+        if st.session_state.get("_recent_choices") != tuple(options):
+            st.session_state.pop("recent_movie", None)
+            st.session_state["_recent_choices"] = tuple(options)
+        movie_id = st.selectbox(
+            "영화 선택",
+            options=options,
+            format_func=lambda mid: "전체 영화" if mid is None else names[mid],
+            key="recent_movie",
+        )
+        sig = (query.strip(), genre, movie_id)
+        if st.session_state.get("_recent_filter_sig") != sig:
+            st.session_state["_recent_filter_sig"] = sig
+            st.session_state["recent_visible_count"] = RECENT_BATCH
         try:
-            with st.spinner("최근 리뷰 조회 중…"):
-                recent_reviews = api.recent_reviews(limit=10)
+            rows, more = get_progressive_reviews(
+                api,
+                visible_count=st.session_state["recent_visible_count"],
+                movie_id=movie_id,
+                movie_query=query.strip() or None,
+                genre=genre,
+            )
         except ApiClientError as exc:
             show_error("최근 리뷰 조회 실패", exc)
         else:
-            if not recent_reviews:
-                st.info("아직 등록된 리뷰가 없습니다.")
+            if not rows:
+                st.info("선택한 조건에 맞는 리뷰가 없습니다.")
             else:
-                for review in recent_reviews:
+                st.caption(f"현재 {len(rows)}건 표시 · 최신순 · 필터 변경 시 20건부터 재조회")
+                for review in rows:
                     movie_label = movie_by_id.get(review["movie_id"], {}).get(
-                        "title", "영화 #" + str(review["movie_id"])
+                        "title", f"영화 #{review['movie_id']}"
                     )
                     st.markdown(f"**영화: {movie_label}**")
                     render_review_details(review)
+                if more:
+                    st.button(
+                        "리뷰 20건 더보기",
+                        key="recent_more",
+                        type="primary",
+                        on_click=load_next_twenty,
+                        args=("recent_visible_count",),
+                    )
+                else:
+                    st.caption("조회할 수 있는 마지막 리뷰까지 표시했습니다.")
 
-with manage_tab:
-    st.subheader("영화 등록 및 관리")
-    st.caption("영화 등록 및 삭제는 FastAPI HTTP를 통해 처리됩니다.")
-    with st.expander("영화 등록", expanded=True):
-        with st.form("movie_create_form", clear_on_submit=False):
-            title = st.text_input(
-                "영화 제목",
-                max_chars=200,
-                placeholder="영화 제목",
-                disabled=not backend_online or ui_read_only,
-            )
-            director = st.text_input(
-                "감독",
-                max_chars=120,
-                placeholder="감독 이름",
-                disabled=not backend_online or ui_read_only,
-            )
-            release_date = st.date_input(
-                "개봉일", value=date(2024, 1, 1), disabled=not backend_online or ui_read_only
-            )
-            genre = st.text_input(
-                "장르",
-                max_chars=80,
-                placeholder="드라마",
-                disabled=not backend_online or ui_read_only,
-            )
-            poster_url = st.text_input(
-                "포스터 URL",
-                placeholder="https://example.org/poster.png",
-                disabled=not backend_online or ui_read_only,
-                help="HTTP(S) URL만 허용합니다. 갤러리에는 대체 포스터 디자인이 표시됩니다.",
-            )
-            submitted = st.form_submit_button(
-                "영화 등록", type="primary", disabled=not backend_online or ui_read_only
-            )
-        if submitted:
-            if not all((title.strip(), director.strip(), genre.strip(), poster_url.strip())):
-                st.error("제목·감독·장르·포스터 URL을 모두 입력해 주세요.")
+elif route == "영화 등록":
+    st.subheader("영화 등록 · 관리자")
+    st.caption("일반 탐색과 분리된 관리자 전용 등록 화면입니다.")
+    if ui_read_only:
+        st.warning("공개 데모에서는 영화 등록이 차단됩니다.")
+    with st.form("movie_create_form", clear_on_submit=False):
+        title = st.text_input(
+            "영화 제목",
+            max_chars=200,
+            placeholder="영화 제목",
+            disabled=not backend_online or ui_read_only,
+        )
+        director = st.text_input(
+            "감독",
+            max_chars=120,
+            placeholder="감독 이름",
+            disabled=not backend_online or ui_read_only,
+        )
+        release_date = st.date_input(
+            "개봉일",
+            value=date(2024, 1, 1),
+            disabled=not backend_online or ui_read_only,
+        )
+        genre = st.text_input(
+            "장르",
+            max_chars=80,
+            placeholder="드라마",
+            disabled=not backend_online or ui_read_only,
+        )
+        poster_url = st.text_input(
+            "포스터 URL",
+            placeholder="https://image.tmdb.org/t/p/w500/...",
+            disabled=not backend_online or ui_read_only,
+            help="HTTP(S) URL을 등록할 수 있습니다. 신뢰되지 않는 포스터는 대체 커버로 표시됩니다.",
+        )
+        submitted = st.form_submit_button(
+            "영화 등록",
+            type="primary",
+            disabled=not backend_online or ui_read_only,
+        )
+    if submitted:
+        if not all((title.strip(), director.strip(), genre.strip(), poster_url.strip())):
+            st.error("제목·감독·장르·포스터 URL을 모두 입력하세요.")
+        else:
+            try:
+                created = api.create(
+                    {
+                        "title": title.strip(),
+                        "director": director.strip(),
+                        "release_date": release_date.isoformat(),
+                        "genre": genre.strip(),
+                        "poster_url": poster_url.strip(),
+                    }
+                )
+            except ApiClientError as exc:
+                show_error("영화 등록 실패", exc)
             else:
-                with st.spinner("영화 저장 중…"):
-                    try:
-                        created = api.create(
-                            {
-                                "title": title.strip(),
-                                "director": director.strip(),
-                                "release_date": release_date.isoformat(),
-                                "genre": genre.strip(),
-                                "poster_url": poster_url.strip(),
-                            }
-                        )
-                    except ApiClientError as exc:
-                        show_error("영화 등록 실패", exc)
-                    else:
-                        st.session_state["selected_movie_id"] = created["id"]
-                        flash(f"영화 ‘{created['title']}’ 등록 완료.")
-                        st.rerun()
-    st.divider()
-    st.subheader("영화 삭제")
-    st.warning("영화를 삭제하면 관련 리뷰와 감성분석 결과도 영구 삭제됩니다.")
-    if movies:
+                flash(f"영화 ‘{created['title']}’ 등록 완료.")
+                navigate_to("영화 둘러보기", created["id"])
+                st.rerun()
+
+elif route == "영화 삭제":
+    st.subheader("영화 삭제 · 관리자")
+    st.error("위험 작업: 영화를 삭제하면 관련 리뷰·감성분석 결과도 영구 삭제됩니다.")
+    if ui_read_only:
+        st.info("공개 데모에서는 영화를 삭제할 수 없습니다.")
+    if not movies:
+        st.info("삭제할 영화가 없습니다.")
+    else:
         delete_id = st.selectbox(
             "삭제할 영화",
-            options=[movie["id"] for movie in movies],
-            format_func=lambda movie_id: (
-                f"{movie_by_id[movie_id]['title']} (리뷰 {movie_by_id[movie_id]['review_count']}건)"
+            options=[m["id"] for m in movies],
+            format_func=lambda mid: (
+                f"{movie_by_id[mid]['title']} (리뷰 {movie_by_id[mid]['review_count']}건)"
             ),
         )
         confirmed = st.checkbox(
-            "선택한 영화와 모든 리뷰의 영구 삭제에 동의합니다",
+            "영화 및 관련 리뷰의 영구 삭제에 동의합니다",
             key="confirm_movie_delete",
+            disabled=ui_read_only,
         )
         if st.button(
             "선택한 영화 삭제",
@@ -462,12 +668,11 @@ with manage_tab:
             else:
                 st.session_state["selected_movie_id"] = None
                 flash("영화와 관련 리뷰가 삭제됐습니다.")
+                navigate_to("영화 둘러보기")
                 st.rerun()
-    else:
-        st.info("삭제할 영화가 없습니다.")
 
 st.divider()
 st.caption(
-    "Mission 18 · Streamlit → FastAPI → SQLite/PostgreSQL · "
-    "AI 결과는 통계적 추정이며 개인 의견이나 별점을 대신하지 않습니다."
+    "Mission 18 · Streamlit → FastAPI → PostgreSQL · "
+    "AI 결과는 통계적 추정이며 관람객 별점이 아닙니다."
 )

@@ -167,6 +167,10 @@ def main() -> int:
                 assert not test.exception, f"Streamlit AppTest exceptions: {test.exception}"
                 assert any("영화의 반응을, 데이터로 읽다" in m.value for m in test.markdown)
                 assert any(payload["title"] in h.value for h in test.subheader)
+                next(
+                    button for button in test.button if button.key == "sidebar_register"
+                ).click().run()
+                assert not test.exception
                 assert any(field.label == "영화 제목" for field in test.text_input)
                 fields = {field.label: field for field in test.text_input}
                 fields["영화 제목"].set_value("G2 Streamlit 등록 영화")

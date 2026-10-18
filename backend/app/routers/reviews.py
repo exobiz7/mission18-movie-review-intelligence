@@ -54,15 +54,25 @@ def recent_reviews(
     "/reviews",
     response_model=list[ReviewResponse],
     summary="리뷰 전체 조회",
-    description="최신 등록 리뷰 순서의 전역 목록, 페이지네이션.",
+    description="최신 리뷰 순서의 페이지네이션. 선택 영화(movie_id), 영화 제목(movie_query), 장르(genre) 서버 측 필터 조합 가능.",
     responses=BASE_ERRORS,
 )
 def all_reviews(
     limit: int = Query(default=50, ge=1, le=100),
     offset: int = Query(default=0, ge=0),
+    movie_id: int | None = Query(default=None, ge=1),
+    movie_query: str | None = Query(default=None, max_length=200),
+    genre: str | None = Query(default=None, max_length=80),
     db: Session = Depends(get_db),
 ) -> list[ReviewResponse]:
-    return list_reviews(db, limit=limit, offset=offset)
+    return list_reviews(
+        db,
+        limit=limit,
+        offset=offset,
+        movie_id=movie_id,
+        movie_query=movie_query,
+        genre=genre,
+    )
 
 
 @router.get(

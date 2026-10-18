@@ -31,22 +31,26 @@ def verify_seeded_live_ui(app: object) -> dict[str, object]:
     assert 3 <= movie_count < 50, "required three movies absent or list may be truncated"
     assert review_count >= 10 * movie_count, "registered reviews below demo threshold"
 
-    tabs = [item.label for item in app.tabs]
-    assert tabs == ["영화 둘러보기", "리뷰 작성·분석", "최근 리뷰 10개", "영화 관리"], (
-        "required tabs missing or changed",
-        tabs,
-    )
+    nav = [tuple(item.options) for item in app.segmented_control]
+    expected = ("영화 둘러보기", "리뷰 보기·감성분석", "리뷰 작성", "최근 리뷰")
+    assert expected in nav, ("required primary navigation missing or changed", nav)
     buttons: dict[str, list[bool]] = {}
     for item in app.button:
         buttons.setdefault(item.label, []).append(bool(item.disabled))
+    for label in ("이 영화 리뷰 보기", "리뷰 작성하기"):
+        assert len(buttons.get(label, [])) >= 3, f"gallery CTA missing: {label}"
+        assert not any(buttons[label]), f"gallery CTA erroneously disabled: {label}"
+    assert "영화 등록·관리" in buttons and "영화 삭제 (주의)" in buttons, (
+        "separate management navigation missing"
+    )
+    # Public writes may appear only on another route, but must be disabled if present.
     for label in ("영화 등록", "리뷰 등록·분석", "선택한 영화 삭제"):
-        assert label in buttons and all(buttons[label]), f"public write enabled or missing: {label}"
-    assert len(buttons.get("이 영화 리뷰 보기", [])) >= 3, "movie gallery action missing"
+        assert all(buttons.get(label, [])), f"public write enabled: {label}"
 
     return {
         "movie_count": movie_count,
         "review_count": review_count,
-        "four_tabs_verified": True,
-        "readonly_actions_disabled": True,
+        "primary_navigation_verified": True,
+        "public_read_only_notice_verified": True,
         "empty_state_expected": False,
     }

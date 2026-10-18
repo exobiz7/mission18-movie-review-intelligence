@@ -82,11 +82,33 @@ class MovieApiClient:
     def create_review(self, data: dict) -> dict:
         return self._request("POST", "/reviews", json=data)
 
-    def reviews(self, *, movie_id: int | None = None, limit: int = 50) -> list[dict]:
-        path = f"/movies/{movie_id}/reviews" if movie_id is not None else "/reviews"
-        return self._request("GET", path, params={"limit": limit, "offset": 0})
+    def reviews(
+        self,
+        *,
+        movie_id: int | None = None,
+        limit: int = 50,
+        offset: int = 0,
+        movie_query: str | None = None,
+        genre: str | None = None,
+    ) -> list[dict]:
+        """Server-side filtered chronological reviews; offset for progressive loading."""
+        if movie_id is not None and (movie_query or genre):
+            # Use the global filtered GET route for combined selectors.
+            path = "/reviews"
+        else:
+            path = f"/movies/{movie_id}/reviews" if movie_id is not None else "/reviews"
+        params: dict[str, str | int] = {"limit": limit, "offset": offset}
+        if path == "/reviews":
+            if movie_id is not None:
+                params["movie_id"] = movie_id
+            if movie_query:
+                params["movie_query"] = movie_query
+            if genre:
+                params["genre"] = genre
+        return self._request("GET", path, params=params)
 
     def recent_reviews(self, *, limit: int = 10) -> list[dict]:
+        """Retain the original 10-item endpoint for historical contract users."""
         return self._request("GET", "/reviews/recent", params={"limit": limit})
 
     def sentiment_summary(self, movie_id: int) -> dict:

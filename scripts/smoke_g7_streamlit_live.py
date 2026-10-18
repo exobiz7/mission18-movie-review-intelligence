@@ -30,6 +30,16 @@ def main() -> None:
     assert not problems, "Streamlit exceptions: " + repr(problems)[:600]
 
     verified = verify_seeded_live_ui(app)
+    # Check disabled mutations on their actual destinations, not hidden tabs.
+    next(item for item in app.button if item.key.startswith("gallery_compose_")).click().run()
+    assert not app.exception
+    assert any(item.label == "리뷰 등록·분석" and item.disabled for item in app.button)
+    next(item for item in app.button if item.key == "sidebar_register").click().run()
+    assert not app.exception
+    assert any(item.label == "영화 등록" and item.disabled for item in app.button)
+    next(item for item in app.button if item.key == "sidebar_delete").click().run()
+    assert not app.exception
+    assert any(item.label == "선택한 영화 삭제" and item.disabled for item in app.button)
 
     evidence = {
         "status": "PASS",
@@ -43,7 +53,7 @@ def main() -> None:
         "seeded_gallery_and_metrics_verified": True,
         "movie_count": verified["movie_count"],
         "review_count": verified["review_count"],
-        "four_tabs_verified": verified["four_tabs_verified"],
+        "primary_navigation_verified": verified["primary_navigation_verified"],
         "readonly_actions_disabled": verified["readonly_actions_disabled"],
         "movie_create_button_disabled": True,
         "public_mutation_attempted": False,

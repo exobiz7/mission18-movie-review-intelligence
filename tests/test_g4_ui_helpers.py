@@ -113,5 +113,5 @@ def test_offline_ui_has_actionable_error_and_no_python_exception(monkeypatch):
     result = AppTest.from_file(str(path), default_timeout=20).run()
     assert not result.exception
     assert any("백엔드 연결 실패" in widget.value for widget in result.error)
-    assert any("영화 갤러리" == subheader.value for subheader in result.subheader)
-    assert any("최근 등록된 리뷰 10개" == subheader.value for subheader in result.subheader)
+    assert any("영화 둘러보기" == subheader.value for subheader in result.subheader)
+    assert any("최근 리뷰" in widget.options for widget in result.segmented_control)
