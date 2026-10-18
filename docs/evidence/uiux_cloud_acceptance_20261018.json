@@ -1,0 +1,109 @@
+{
+  "schema": "mission18/uiux-cloud-acceptance/v1",
+  "status": "PASS",
+  "source_commit_at_acceptance": "fb55618f2f8e9668940ee9a21666c92d823317a2",
+  "source_commit_assertion": "Browser E2E behaviour corroborated; host does not attest the runtime git SHA",
+  "cloud_url": "https://mission18-movie-review-intelligence-irdbhh5ksnbzv4ag4varjr.streamlit.app/",
+  "browser_started_utc": "2026-10-18T13:39:45.374725+00:00",
+  "browser_kind": "anonymous Chrome/Playwright, actual Streamlit Cloud iframe",
+  "browser_check_total": 37,
+  "browser_check_passed": 37,
+  "browser_checks": {
+    "new_anonymous_session": true,
+    "public_cloud_http200": true,
+    "no_share_login": true,
+    "new_cloud_v2_loads": true,
+    "production_data_30_movies_360_reviews": true,
+    "read_only_notice": true,
+    "four_distinct_main_pages": true,
+    "gallery_has_page_local_title_and_genre": true,
+    "gallery_has_two_context_actions": true,
+    "korean_gallery_title_search": true,
+    "gallery_click_directly_opens_review_page": true,
+    "gallery_selected_film_is_preserved": true,
+    "view_has_movie_search_and_genre": true,
+    "view_bottom_cta": true,
+    "view_to_compose_page": true,
+    "view_to_compose_retains_film": true,
+    "compose_has_independent_title_genre_dropdown": true,
+    "public_review_submission_disabled": true,
+    "gallery_direct_to_compose": true,
+    "recent_feed_has_search_genre_movie": true,
+    "recent_default_20": true,
+    "recent_load_more_visible": true,
+    "recent_more_20_to_40": true,
+    "recent_title_filter_oldboy_12": true,
+    "recent_filter_resets_count": true,
+    "recent_animation_first20": true,
+    "recent_animation_more_visible": true,
+    "recent_animation_36_after_more": true,
+    "recent_animation_no_more_after_36": true,
+    "separate_movie_registration": true,
+    "registration_disabled_public": true,
+    "separate_destructive_admin_page": true,
+    "movie_delete_disabled_public": true,
+    "mobile_responsive_view": true,
+    "no_streamlit_python_exception": true,
+    "no_browser_js_error": true,
+    "no_http_mutations_from_browser": true
+  },
+  "screenshot_count": 10,
+  "screenshots": [
+    {
+      "file": "01_gallery_30_films_two_actions.png",
+      "sha256": "2ceba8f10f006a8dc1a5ef43043686adc1396f090ff2b109c8bb0980b885a257",
+      "bytes": 187449
+    },
+    {
+      "file": "02_oldboy_reviews_analysis.png",
+      "sha256": "501cab7d0eb6e865440f732b099ae9db95c995201b6c7950439bb1d834d646ea",
+      "bytes": 135588
+    },
+    {
+      "file": "03_oldboy_compose_readonly.png",
+      "sha256": "ee6dff6570f72eb20b425a6a4e38062ee40f50543c76e0dcc27a311cdfe886e5",
+      "bytes": 98116
+    },
+    {
+      "file": "04_recent_reviews_initial20.png",
+      "sha256": "36de3beddd5a10694a28c825ca186151bec576e01e25f7f09713845b3889a632",
+      "bytes": 145086
+    },
+    {
+      "file": "05_recent_reviews_expanded40.png",
+      "sha256": "789af67f6b5c5024d3e33e8ffc5ea26d7adc8f2da5af3f0d8d67eb1693ba132a",
+      "bytes": 159135
+    },
+    {
+      "file": "06_recent_title_filter_oldboy12.png",
+      "sha256": "2a76bb9e7d98652722facdb87d35cf0208f70caad7bddec4463e5e99d6f38c4f",
+      "bytes": 149623
+    },
+    {
+      "file": "07_recent_genre_animation36.png",
+      "sha256": "8d5c08fd80cfc1a02f7b05b783999391a3556a911181e523ff5ec627602a15fb",
+      "bytes": 157376
+    },
+    {
+      "file": "08_admin_create_readonly.png",
+      "sha256": "6e131005793e7b076d08e78597d7166c38da0ddea4714858e66f18f58b374594",
+      "bytes": 89876
+    },
+    {
+      "file": "09_admin_delete_readonly.png",
+      "sha256": "bc696f0eb9d2fcb131855f3f45f788c448c7a45ae472646cdd8097af99c1f896",
+      "bytes": 119734
+    },
+    {
+      "file": "10_mobile_gallery.png",
+      "sha256": "a723b890db253a3fcf32f20dca8951100a56ff9ad7a95a3e4ed1d8f5fd7d7ce7",
+      "bytes": 50430
+    }
+  ],
+  "raw_manifest_sha256": "21d5797c70a39fcedd6b520f369bae1b4509aba3a0dcec0a3193f693fafdf6dd",
+  "api_contract": "13 routes retained; deployed Render lacks new GET /reviews filters, frontend GET-only fallback verified",
+  "backend_data": "Neon SELECT 30 movies / 360 synthetic reviews, 27 real TMDB poster links",
+  "public_mutations": "Not used; anonymous browser POST/DELETE to Render 0",
+  "paid_ci_used": false,
+  "historical_g8_29_of_29": "Separately preserved, not same UI release"
+}
