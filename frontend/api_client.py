@@ -23,6 +23,8 @@ class MovieApiClient:
         self.timeout = httpx.Timeout(timeout)
         # Server-side secret only. Never sent to browser UI or used for GET requests.
         self.write_token = os.environ.get("API_WRITE_TOKEN", "")
+        # Backend deployment can lag behind Streamlit Cloud's automatic push.
+        self._review_filter_capability: bool | None = None
 
     def _request(self, method: str, path: str, **kwargs: Any) -> Any:
         if method.upper() in {"POST", "PUT", "PATCH", "DELETE"} and self.write_token:
@@ -99,6 +101,15 @@ class MovieApiClient:
             path = f"/movies/{movie_id}/reviews" if movie_id is not None else "/reviews"
         params: dict[str, str | int] = {"limit": limit, "offset": offset}
         if path == "/reviews":
+            if movie_query or genre:
+                if not self._supports_review_filters():
+                    return self._legacy_filtered_reviews(
+                        limit=limit,
+                        offset=offset,
+                        movie_id=movie_id,
+                        movie_query=movie_query,
+                        genre=genre,
+                    )
             if movie_id is not None:
                 params["movie_id"] = movie_id
             if movie_query:
@@ -106,6 +117,63 @@ class MovieApiClient:
             if genre:
                 params["genre"] = genre
         return self._request("GET", path, params=params)
+
+    def _supports_review_filters(self) -> bool:
+        if self._review_filter_capability is None:
+            try:
+                spec = self._request("GET", "/openapi.json")
+                parameters = spec["paths"]["/reviews"]["get"]["parameters"]
+                names = {item["name"] for item in parameters}
+                self._review_filter_capability = {"movie_id", "movie_query", "genre"}.issubset(
+                    names
+                )
+            except (ApiClientError, KeyError, TypeError, ValueError):
+                self._review_filter_capability = False
+        return self._review_filter_capability
+
+    def _legacy_filtered_reviews(
+        self,
+        *,
+        limit: int,
+        offset: int,
+        movie_id: int | None,
+        movie_query: str | None,
+        genre: str | None,
+    ) -> list[dict]:
+        """Bounded, read-only fallback for an older Render deployment.
+
+        Filters movie IDs via the existing /movies query and scans chronological
+        GET /reviews pages; never requests or performs a mutation.
+        When the upgraded API is deployed, the DB handles all filters directly.
+        """
+        matches = self.movies(query=movie_query, genre=genre)
+        allowed = {int(movie["id"]) for movie in matches}
+        if movie_id is not None:
+            allowed.intersection_update({movie_id})
+        if not allowed:
+            return []
+        filtered: list[dict] = []
+        scanned = 0
+        required = offset + limit
+        while len(filtered) < required:
+            if scanned >= 5000:
+                raise ApiClientError(
+                    "리뷰가 호환 조회 한도를 초과했습니다. Render API 업데이트가 필요합니다.",
+                    "REVIEW_FILTER_UPGRADE_REQUIRED",
+                )
+            page_limit = min(100, 5000 - scanned)
+            page = self._request(
+                "GET",
+                "/reviews",
+                params={"limit": page_limit, "offset": scanned},
+            )
+            if not isinstance(page, list):
+                raise ApiClientError("리뷰 목록 형식이 올바르지 않습니다.", "INVALID_RESPONSE")
+            filtered.extend(row for row in page if row.get("movie_id") in allowed)
+            scanned += len(page)
+            if len(page) < page_limit:
+                break
+        return filtered[offset:required]
 
     def recent_reviews(self, *, limit: int = 10) -> list[dict]:
         """Retain the original 10-item endpoint for historical contract users."""
