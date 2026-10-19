@@ -1,9 +1,10 @@
 """FastAPI composition for Movies, Reviews, and real sentiment inference."""
 
 import logging
+import os
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -60,7 +61,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="Movie Review Sentiment Intelligence API",
-    version="0.3.0",
+    version="0.4.0",
     description=(
         "영화 및 리뷰 CRUD와 자동 한국어 영화 감성분석. "
         "감성 점수는 모델의 긍정 확률이며 사용자 별점이 아닙니다."
@@ -99,7 +100,12 @@ def health() -> HealthResponse:
     summary="서비스 준비 상태 확인",
     description="DB와 실제 고정 버전 감성분석 모델의 준비 상태를 확인합니다. 모델 미설정/실패 시 503입니다.",
 )
-def readiness(request: Request, db: Session = Depends(get_db)) -> ReadinessResponse:
+def readiness(
+    request: Request,
+    response: Response,
+    db: Session = Depends(get_db),
+    settings=Depends(get_settings),
+) -> ReadinessResponse:
     try:
         db.execute(text("SELECT id FROM movies LIMIT 0"))
     except SQLAlchemyError as exc:
@@ -127,4 +133,9 @@ def readiness(request: Request, db: Session = Depends(get_db)) -> ReadinessRespo
             "M18_READINESS_MODEL_FAILED model_not_loaded=true"
         )
         raise ServiceError(503, "MODEL_UNAVAILABLE", "감성분석 모델이 아직 준비되지 않았습니다.")
+    # Nonsecret capability metadata: the backend is the only write-policy authority.
+    response.headers["X-M18-Write-Policy"] = settings.write_policy
+    response.headers["X-M18-App-Version"] = "0.4.0"
+    revision = os.environ.get("RENDER_GIT_COMMIT", "local")
+    response.headers["X-M18-Revision"] = revision[:40]
     return ReadinessResponse(status="ready", database="ready", model="ready")

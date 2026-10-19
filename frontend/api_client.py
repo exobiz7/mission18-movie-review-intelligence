@@ -16,7 +16,7 @@ class ApiClientError(Exception):
 
 
 class MovieApiClient:
-    def __init__(self, base_url: str | None = None, timeout: float = 5.0) -> None:
+    def __init__(self, base_url: str | None = None, timeout: float = 20.0) -> None:
         self.base_url = (
             base_url or os.environ.get("API_BASE_URL", "http://127.0.0.1:8000")
         ).rstrip("/")
@@ -25,6 +25,8 @@ class MovieApiClient:
         self.write_token = os.environ.get("API_WRITE_TOKEN", "")
         # Backend deployment can lag behind Streamlit Cloud's automatic push.
         self._review_filter_capability: bool | None = None
+        self.public_demo_writes = False
+        self.server_revision = ""
 
     def _request(self, method: str, path: str, **kwargs: Any) -> Any:
         if method.upper() in {"POST", "PUT", "PATCH", "DELETE"} and self.write_token:
@@ -46,6 +48,9 @@ class MovieApiClient:
             except ValueError:
                 message, code = "백엔드에서 예상하지 못한 응답을 받았습니다.", "INVALID_RESPONSE"
             raise ApiClientError(message, code)
+        if path == "/readiness":
+            self.public_demo_writes = response.headers.get("X-M18-Write-Policy") == "public_demo"
+            self.server_revision = response.headers.get("X-M18-Revision", "")
         if response.status_code == 204:
             return None
         try:
@@ -61,7 +66,19 @@ class MovieApiClient:
             params["query"] = query
         if genre:
             params["genre"] = genre
-        return self._request("GET", "/movies", params=params)
+        rows = []
+        while True:
+            page = self._request("GET", "/movies", params=dict(params))
+            if not isinstance(page, list):
+                raise ApiClientError("영화 목록 형식이 올바르지 않습니다.", "INVALID_RESPONSE")
+            rows.extend(page)
+            if len(page) < params["limit"]:
+                return rows
+            if len(rows) >= 5000:
+                raise ApiClientError(
+                    "영화가 5,000편을 초과했습니다. 검색 조건을 좁혀 주세요.", "CATALOG_TOO_LARGE"
+                )
+            params["offset"] = len(rows)
 
     def movie(self, movie_id: int) -> dict:
         return self._request("GET", f"/movies/{movie_id}")
@@ -82,7 +99,8 @@ class MovieApiClient:
             return False
 
     def create_review(self, data: dict) -> dict:
-        return self._request("POST", "/reviews", json=data)
+        # No automatic retry on writes: a timed-out request may already have committed.
+        return self._request("POST", "/reviews", json=data, timeout=120.0)
 
     def reviews(
         self,
