@@ -120,7 +120,10 @@ def render_review_details(review: dict, *, allow_delete: bool = False) -> None:
             f"모델 {review['model_revision'][:12]}"
         )
         if allow_delete and not ui_read_only:
-            with st.expander("리뷰 삭제", expanded=False):
+            with st.expander(
+                "리뷰 삭제",
+                expanded=bool(st.session_state.get(f"confirm_review_{review['id']}", False)),
+            ):
                 confirmed = st.checkbox(
                     "리뷰 삭제 확인",
                     key=f"confirm_review_{review['id']}",
