@@ -271,3 +271,45 @@ def test_compose_and_recent_genre_selectors_operate_independently(fake_app):
         for x in get_progressive_reviews(backend, visible_count=20, genre="애니메이션")[0]
     )
     assert backend.mutations == 0
+
+
+def test_stale_cloud_adapter_is_reloaded_once(monkeypatch):
+    import importlib
+
+    import frontend.api_client as module
+
+    backend = FakeMovieApi()
+    reload_calls = []
+    monkeypatch.setattr(module, "MovieApiClient", lambda: backend)
+    monkeypatch.setattr(module, "CLIENT_PROTOCOL_VERSION", "stale")
+
+    def restore_adapter(target):
+        assert target is module
+        reload_calls.append(target.__name__)
+        target.CLIENT_PROTOCOL_VERSION = "public-demo-v1"
+        return target
+
+    monkeypatch.setattr(importlib, "reload", restore_adapter)
+    app = AppTest.from_file(str(ROOT / "frontend/app.py"), default_timeout=25).run()
+    assert not app.exception
+    assert reload_calls == ["frontend.api_client"]
+    app.run()
+    assert not app.exception
+    assert len(reload_calls) == 1
+
+
+def test_current_cloud_adapter_does_not_reload_during_ui_runs(monkeypatch):
+    import importlib
+
+    import frontend.api_client as module
+
+    backend = FakeMovieApi()
+    monkeypatch.setattr(module, "MovieApiClient", lambda: backend)
+    monkeypatch.setattr(module, "CLIENT_PROTOCOL_VERSION", "public-demo-v1")
+
+    def reject_reload(target):
+        raise AssertionError("Current adapter must not be reloaded")
+
+    monkeypatch.setattr(importlib, "reload", reject_reload)
+    app = AppTest.from_file(str(ROOT / "frontend/app.py"), default_timeout=25).run()
+    assert not app.exception

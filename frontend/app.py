@@ -5,6 +5,7 @@ Streamlit owns UI navigation only; FastAPI owns inference and persistence.
 
 from __future__ import annotations
 
+import importlib
 import os
 import sys
 from datetime import date
@@ -18,7 +19,14 @@ _PROJECT_ROOT = str(Path(__file__).resolve().parents[1])
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
-from frontend.api_client import ApiClientError, MovieApiClient  # noqa: E402
+from frontend import api_client as _api_client_module  # noqa: E402
+
+# Git hot-sync can rerun app.py while an older imported adapter remains cached.
+# Refresh only an obsolete protocol, not on ordinary interactive reruns.
+if getattr(_api_client_module, "CLIENT_PROTOCOL_VERSION", None) != "public-demo-v1":
+    _api_client_module = importlib.reload(_api_client_module)
+ApiClientError = _api_client_module.ApiClientError
+MovieApiClient = _api_client_module.MovieApiClient
 from frontend.ui_helpers import (  # noqa: E402
     gallery_page,
     positive_index_text,

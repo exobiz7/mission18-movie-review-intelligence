@@ -8,6 +8,9 @@ from typing import Any
 
 import httpx
 
+# Increment only when the adapter contract changes. Used for Cloud hot-reloads.
+CLIENT_PROTOCOL_VERSION = "public-demo-v1"
+
 
 @dataclass(frozen=True)
 class ApiClientError(Exception):
