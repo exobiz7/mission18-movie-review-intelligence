@@ -313,3 +313,23 @@ def test_current_cloud_adapter_does_not_reload_during_ui_runs(monkeypatch):
     monkeypatch.setattr(importlib, "reload", reject_reload)
     app = AppTest.from_file(str(ROOT / "frontend/app.py"), default_timeout=25).run()
     assert not app.exception
+
+
+def test_confirmed_review_delete_panel_stays_open_on_rerun(monkeypatch):
+    import frontend.api_client as module
+
+    backend = FakeMovieApi()
+    backend.base_url = "http://127.0.0.1:8000"
+    monkeypatch.setattr(module, "MovieApiClient", lambda: backend)
+    monkeypatch.delenv("FRONTEND_READ_ONLY", raising=False)
+    monkeypatch.delenv("PUBLIC_DEPLOYMENT", raising=False)
+    app = AppTest.from_file(str(ROOT / "frontend/app.py"), default_timeout=25).run()
+    get_button(app, "gallery_view_1").click().run()
+    checkbox = next(x for x in app.checkbox if x.key == "confirm_review_112")
+    checkbox.check().run()
+    assert not app.exception
+    assert not get_button(app, "delete_review_112").disabled
+    assert next(x for x in app.expander if x.label == "리뷰 삭제").proto.expanded
+    get_button(app, "delete_review_112").click().run()
+    assert not app.exception
+    assert backend.mutations == 1
