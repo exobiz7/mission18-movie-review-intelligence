@@ -23,7 +23,7 @@ def test_readiness_database_failure_emits_safe_classification():
     req = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(model_ready=True)))
     with patch("backend.app.main.logging.getLogger") as logger_factory:
         with pytest.raises(ServiceError) as error:
-            readiness(req, FailingSession())
+            readiness(req, None, db=FailingSession())
     assert error.value.status_code == 503
     assert error.value.code == "DATABASE_UNAVAILABLE"
     call = logger_factory.return_value.warning.call_args
@@ -42,7 +42,7 @@ def test_readiness_model_failure_does_not_pretend_ready():
     req = SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(model_ready=False)))
     with patch("backend.app.main.logging.getLogger") as logger_factory:
         with pytest.raises(ServiceError) as error:
-            readiness(req, HealthySession())
+            readiness(req, None, db=HealthySession())
     assert error.value.status_code == 503
     assert error.value.code == "MODEL_UNAVAILABLE"
     call = logger_factory.return_value.warning.call_args

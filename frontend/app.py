@@ -107,7 +107,7 @@ def render_review_details(review: dict, *, allow_delete: bool = False) -> None:
             )
         st.write(review["content"])
         st.caption(
-            f"AI 긍정 확률 {review['sentiment_score'] * 100:.1f}% · "
+            f"리뷰 ID {review['id']} · AI 긍정 확률 {review['sentiment_score'] * 100:.1f}% · "
             f"예측 확신도 {review['sentiment_confidence'] * 100:.1f}% · "
             f"모델 {review['model_revision'][:12]}"
         )
@@ -189,6 +189,28 @@ notice = st.session_state.pop("m18_flash", None)
 if notice:
     st.success(notice)
 
+with st.spinner("무료 서버 연결 중입니다. 휴면 상태였다면 1분 이상 걸릴 수 있습니다…"):
+    backend_online = api.health()
+if backend_online:
+    ready = api.readiness()
+    if ready:
+        st.success("서버·AI 모델 연결 정상", icon="✅")
+    else:
+        st.warning("백엔드 연결 정상, AI 모델 미준비: /readiness 상태를 확인하세요.")
+else:
+    ready = False
+    st.error("백엔드 연결 실패: API_BASE_URL 및 FastAPI 실행 상태를 확인하세요.")
+
+# Owner enables anonymous grading at the backend; no visitor password is required.
+# Explicit forced read-only remains an emergency UI kill switch.
+if ready and getattr(api, "public_demo_writes", False):
+    ui_read_only = os.environ.get("FRONTEND_FORCE_READ_ONLY", "").lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }
+
 with st.sidebar:
     st.header("CINÉ SIGNAL")
     st.caption("영화 검색·장르 필터는 각 화면에서 독립적으로 작동합니다.")
@@ -218,21 +240,10 @@ with st.sidebar:
     st.divider()
     st.image(str(Path(__file__).parent / "assets" / "tmdb_blue_short.svg"), width=100)
     st.caption("실제 영화 27편의 메타데이터·포스터 출처: TMDB")
-    st.caption("리뷰는 모델 시연을 위한 합성 문장입니다.")
+    st.caption("기본 360건은 합성 시연 리뷰이며, 체험 중 추가한 리뷰는 함께 저장됩니다.")
     st.caption("This product uses the TMDB API but is not endorsed or certified by TMDB.")
     st.markdown("[TMDB 출처·저작권](https://www.themoviedb.org/)")
 
-with st.spinner("무료 서버 연결 중입니다. 휴면 상태였다면 1분 이상 걸릴 수 있습니다…"):
-    backend_online = api.health()
-if backend_online:
-    ready = api.readiness()
-    if ready:
-        st.success("서버·AI 모델 연결 정상", icon="✅")
-    else:
-        st.warning("백엔드 연결 정상, AI 모델 미준비: /readiness 상태를 확인하세요.")
-else:
-    ready = False
-    st.error("백엔드 연결 실패: API_BASE_URL 및 FastAPI 실행 상태를 확인하세요.")
 
 try:
     movies = api.movies() if backend_online else []
@@ -248,6 +259,11 @@ if ui_read_only:
         "방지하기 위해 등록·삭제가 비활성화되었습니다."
     )
 
+if not ui_read_only and getattr(api, "public_demo_writes", False):
+    st.info(
+        "체험·채점 모드: 영화·리뷰 등록, 실제 AI 분석, 삭제가 가능합니다. 공유 시연 데이터이므로 개인정보는 입력하지 마세요."
+    )
+
 st.session_state["selected_movie_id"] = selected_movie_id(
     movies, st.session_state.get("selected_movie_id")
 )
@@ -255,7 +271,11 @@ movie_by_id = {movie["id"]: movie for movie in movies}
 
 if backend_online:
     a, b, c = st.columns(3)
-    a.metric("등록된 영화", f"{len(movies)}편", help="현재 목록 최대 50편 기준")
+    a.metric(
+        "등록된 영화",
+        f"{len(movies)}편",
+        help="백엔드의 전체 영화 목록을 페이지별로 조회한 합계입니다.",
+    )
     b.metric("등록된 리뷰", f"{total_reviews(movies):,}건")
     c.metric("AI 긍정 지수", positive_index_text(weighted_positivity(movies)))
     st.caption("현재 목록의 리뷰 가중평균이며 관람객 별점이 아닙니다.")
@@ -562,7 +582,7 @@ elif route == "최근 리뷰":
                     movie_label = movie_by_id.get(review["movie_id"], {}).get(
                         "title", f"영화 #{review['movie_id']}"
                     )
-                    st.markdown(f"**영화: {movie_label}**")
+                    st.markdown(f"**영화: {movie_label} · ID {review['movie_id']}**")
                     render_review_details(review)
                 if more:
                     st.button(
@@ -577,7 +597,7 @@ elif route == "최근 리뷰":
 
 elif route == "영화 등록":
     st.subheader("영화 등록 · 관리자")
-    st.caption("일반 탐색과 분리된 관리자 전용 등록 화면입니다.")
+    st.caption("영화 정보를 입력하면 등록 즉시 목록과 리뷰 작성 화면에서 사용할 수 있습니다.")
     if ui_read_only:
         st.warning("공개 데모에서는 영화 등록이 차단됩니다.")
     with st.form("movie_create_form", clear_on_submit=False):
@@ -653,7 +673,7 @@ elif route == "영화 삭제":
         )
         confirmed = st.checkbox(
             "영화 및 관련 리뷰의 영구 삭제에 동의합니다",
-            key="confirm_movie_delete",
+            key=f"confirm_movie_delete_{delete_id}",
             disabled=ui_read_only,
         )
         if st.button(

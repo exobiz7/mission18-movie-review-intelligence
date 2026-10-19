@@ -25,7 +25,9 @@ class Settings(BaseSettings):
     model_revision: str = "d1c0233fc013ae8bd879d7b61f2bec69aa3af4c9"
     max_tokens: int = Field(default=192, ge=8, le=512)
     public_deployment: bool = False
-    write_policy: Literal["loopback", "read_only", "token"] = "loopback"
+    write_policy: Literal["loopback", "read_only", "token", "public_demo"] = "loopback"
+    public_demo_acknowledged: bool = False
+    demo_writes_per_minute: int = Field(default=60, ge=10, le=300)
     api_write_token: SecretStr | None = None
 
     @property
@@ -34,6 +36,8 @@ class Settings(BaseSettings):
 
     @model_validator(mode="after")
     def fail_closed_public_configuration(self) -> Settings:
+        if self.write_policy == "public_demo" and not self.public_demo_acknowledged:
+            raise ValueError("Public demo writes require explicit PUBLIC_DEMO_ACKNOWLEDGED=true")
         if self.write_policy == "token":
             token = self.api_write_token.get_secret_value() if self.api_write_token else ""
             if (

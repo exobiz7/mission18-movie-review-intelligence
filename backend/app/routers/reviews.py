@@ -11,7 +11,11 @@ from backend.app.security import require_write_access
 from backend.app.sentiment import SentimentAnalyzer, get_analyzer
 
 router = APIRouter(tags=["Reviews"])
-BASE_ERRORS = {422: {"model": ApiErrorEnvelope}, 503: {"model": ApiErrorEnvelope}}
+BASE_ERRORS = {
+    429: {"model": ApiErrorEnvelope, "description": "공개 체험 요청 속도 제한"},
+    422: {"model": ApiErrorEnvelope},
+    503: {"model": ApiErrorEnvelope},
+}
 LOOKUP_ERRORS = {**BASE_ERRORS, 404: {"model": ApiErrorEnvelope}}
 
 

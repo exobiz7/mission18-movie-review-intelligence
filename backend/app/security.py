@@ -8,6 +8,9 @@ from __future__ import annotations
 
 import ipaddress
 import secrets
+import threading
+import time
+from collections import deque
 
 from fastapi import Depends, Request
 from pydantic import SecretStr
@@ -41,8 +44,41 @@ def has_valid_bearer(header: str | None, secret: SecretStr | None) -> bool:
     return secrets.compare_digest(value.encode("utf-8"), expected.encode("utf-8"))
 
 
+class DemoWriteLimiter:
+    """Process-wide 60-second window for a single-worker educational demo.
+
+    No client IP/header is trusted. This is a basic burst limit, not distributed
+    authentication or DDoS protection. Ordinary instructor tests need no login.
+    """
+
+    def __init__(self) -> None:
+        self.times: deque[float] = deque()
+        self.lock = threading.Lock()
+
+    def allow(self, limit: int, now: float | None = None) -> bool:
+        now = time.monotonic() if now is None else now
+        with self.lock:
+            while self.times and self.times[0] <= now - 60:
+                self.times.popleft()
+            if len(self.times) >= limit:
+                return False
+            self.times.append(now)
+            return True
+
+
+_demo_writes = DemoWriteLimiter()
+
+
 def require_write_access(request: Request, settings: Settings = Depends(get_settings)) -> None:
     """Reject all unauthorized writes BEFORE invoking DB/inference services."""
+    if settings.write_policy == "public_demo":
+        if not settings.public_demo_acknowledged:
+            raise ServiceError(403, "WRITE_DISABLED", "공개 체험 모드가 승인되지 않았습니다.")
+        if not _demo_writes.allow(settings.demo_writes_per_minute):
+            raise ServiceError(
+                429, "DEMO_RATE_LIMIT", "체험 요청이 많습니다. 1분 후 다시 시도해 주세요."
+            )
+        return
     if settings.write_policy == "read_only":
         raise ServiceError(403, "WRITE_DISABLED", "공개 변경 기능이 비활성화되어 있습니다.")
     if settings.write_policy == "loopback":

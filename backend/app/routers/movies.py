@@ -10,6 +10,7 @@ from backend.app.services import create_movie, delete_movie, get_movie, list_mov
 
 router = APIRouter(prefix="/movies", tags=["Movies"])
 COMMON_ERRORS = {
+    429: {"model": ApiErrorEnvelope, "description": "공개 체험 요청 속도 제한"},
     422: {"model": ApiErrorEnvelope, "description": "요청 검증 실패"},
     503: {"model": ApiErrorEnvelope, "description": "DB 일시적 사용 불가"},
 }
