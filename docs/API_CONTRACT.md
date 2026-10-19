@@ -16,6 +16,21 @@
 - `X-Request-ID` always in response headers; server-generated if missing or invalid. No raw review content, SQL statements or secret values in error logs.
 - Scope excludes PATCH, users/auth, image ingestion, and independently exposing inference API. The admin/write access risk must be resolved before an unrestricted public demonstration.
 
+### Public grading policy update (2026-10-19)
+
+The deployed application adds an explicit, owner-enabled `WRITE_POLICY=public_demo` mode for anonymous educational grading. This operational policy does not change the 13 endpoint identities or request/response DTOs in the G1 manifest. Its implemented authorization/rate-limit errors and capability headers supplement the historical baseline table below; the runtime OpenAPI and `tests/test_public_demo.py` record the implemented behavior.
+
+| Write policy | Implemented behavior |
+|---|---|
+| `loopback` | Local development writes from a real loopback peer; rejected for a configured public deployment |
+| `read_only` | All movie/review creation and deletion denied with `403 WRITE_DISABLED` |
+| `token` | A valid server-side bearer credential is required; invalid/missing authorization returns `401 AUTH_REQUIRED` |
+| `public_demo` | Anonymous creation/inference/deletion allowed only with `PUBLIC_DEMO_ACKNOWLEDGED=true`; otherwise startup configuration is rejected |
+
+`public_demo` uses a process-wide, thread-protected 60-second write window: `DEMO_WRITES_PER_MINUTE` defaults to 60 and accepts 10–300. Exceeding it returns `429 DEMO_RATE_LIMIT` before mutation or inference. The limit applies across visitors in that process and is a basic burst control, not per-user authentication or distributed rate limiting. Public deployments still require PostgreSQL and explicit HTTPS CORS origins. The current deployment evidence and owner-enabled scope are recorded in [public grading acceptance](PUBLIC_GRADING_ACCEPTANCE_20261019.md).
+
+The Streamlit client enables anonymous write controls only after successful readiness reports the backend `public_demo` capability. `FRONTEND_FORCE_READ_ONLY=true` keeps those controls disabled even when that capability is advertised. In `public_demo`, the older `FRONTEND_READ_ONLY`/`PUBLIC_DEPLOYMENT` UI defaults are intentionally overridden by the backend capability; UI visibility does not replace backend enforcement. Review creation allows a 120-second client timeout and performs no automatic write retry. A timed-out POST may already have committed; inspect the review list before submitting it again.
+
 ## 2. Endpoints and contractual side effects
 
 | ID | Method | Path | Request | Success | Error | Side effect |
@@ -69,6 +84,16 @@ Validate whitespace **after** trimming, including Korean strings. Poster URL is 
 ### Health/Readiness
 
 `GET /health`: `{"status":"ok"}` reports process liveness. `GET /readiness` returns `{"status":"ready","database":"ready","model":"ready"}` **only when required DB and configured actual model are ready**; otherwise 503 with safe error code. It is not a public metric endpoint. A fake injected adapter may be used **only in isolated tests**, never disguised as a real model in public deployment.
+
+Successful readiness responses also provide the following nonsecret capability headers; the JSON body above is unchanged:
+
+| Header | Meaning |
+|---|---|
+| `X-M18-Write-Policy` | Backend-selected write policy, including `public_demo`; used by Streamlit to select its enabled controls |
+| `X-M18-App-Version` | Application version, currently `0.4.0` in the reviewed implementation |
+| `X-M18-Revision` | Up to 40 characters of `RENDER_GIT_COMMIT`, or `local` outside Render; identifies the backend revision, not the Streamlit frontend build |
+
+These headers disclose capabilities, not credentials. Readiness establishes DB/model availability; it does not by itself prove that a particular create/delete transaction or browser flow succeeded.
 
 ### Query parameters
 
@@ -142,9 +167,9 @@ Envelope for all application errors (including 422 validation errors):
 | `MODEL_UNAVAILABLE` | 503 | model missing/unknown label mapping/inference failure |
 | `DATABASE_UNAVAILABLE` | 503 | DB cannot serve requests |
 | `INTERNAL_ERROR` | 500 | unexpected backend defect |
-| `RATE_LIMITED` | 429 | only if an actual rate limiter is configured |
+| `DEMO_RATE_LIMIT` | 429 | the implemented `public_demo` process-wide write window is full |
 
-Never present a hypothetical 400/409/429 as implemented until tests confirm it. Validation response details may include field path and generalized reason; **never raw input values or secrets**. In OpenAPI, list available errors for each operation and document descriptions/examples.
+The implemented public-demo 429 behavior is covered by `tests/test_public_demo.py`; the table's optional `INVALID_OPERATION` must not be presented as a verified runtime path without evidence. Validation response details may include field path and generalized reason; **never raw input values or secrets**. In OpenAPI, list available errors for each operation and document descriptions/examples.
 
 ## 7. Implementation and review acceptance
 

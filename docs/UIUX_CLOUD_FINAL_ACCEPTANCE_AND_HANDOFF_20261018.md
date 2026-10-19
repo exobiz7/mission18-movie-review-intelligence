@@ -1,5 +1,7 @@
 # Mission 18 · UI/UX 최종 수용 및 제출 패키징 기준본
 
+> **역사적 기준본 / 현행 기준 대체:** 이 문서는 2026-10-18의 읽기 전용 UI/UX 수용 기록을 보존합니다. 아래의 현행 코드·Render 구버전·쓰기 비활성화·37/37 및 제출 경로는 당시 기준입니다. 2026-10-19에 소유자가 활성화한 익명 생성·추론·삭제와 현재 최종 검수·패키징 상태는 [공개 채점 수용 기준](PUBLIC_GRADING_ACCEPTANCE_20261019.md) 및 [새 채점 안내](GRADER_GUIDE_20261019.md)를 따릅니다.
+
 기준일: 2026-10-18 (KST)
 제출 식별자: **미션18_2팀_이형기**
 서비스: https://mission18-movie-review-intelligence-irdbhh5ksnbzv4ag4varjr.streamlit.app/

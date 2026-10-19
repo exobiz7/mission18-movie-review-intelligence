@@ -1,5 +1,7 @@
 # Mission 18 — Instructor / Mentor Quickstart
 
+> **Historical / superseded:** This file preserves the 2026-10-18 read-only grading snapshot. References below to "current", disabled writes, old test totals and pending G8 packaging apply only to that date. For the owner-enabled anonymous creation/inference/deletion flow and present delivery status, use [the 2026-10-19 grader guide](GRADER_GUIDE_20261019.md) and [public grading acceptance](PUBLIC_GRADING_ACCEPTANCE_20261019.md).
+
 > **Verified snapshot: 2026-10-18.** The statements below are current. Date-stamped earlier milestones elsewhere in the repository are preserved as historical evidence, not current deployment claims.
 
 ## Live review links

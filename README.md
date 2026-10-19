@@ -1,12 +1,18 @@
 # Mission 18 — Movie Review Sentiment Intelligence
 
-**Current status (2026-10-18):** GitHub **PUBLIC**; Render Free FastAPI + Neon PostgreSQL live, database/model ready; **30 movies / 360 synthetic KoELECTRA-scored reviews** (27 real TMDB-metadata movies with verified externally hosted actual posters + 3 historical fictional demos with concept covers). Streamlit Community Cloud **anonymous Chromium E2E 29/29 PASS**, including 9-per-page gallery (4 pages), real poster display, Korean search, 11 genres, reviews/recent ten, disabled writes and mobile. Current weighted AI positivity **52.9/100**, **not a viewer star rating**. Mac Studio full local free-first release on demo30 PR #2 **PASS (148 pytest)**, Cloud ImportError resolved via PR #3, hosted GitHub Actions **NOT RUN**. Final submission identity **미션18_2팀_이형기** and evidence ZIP/PDF are the G8 deliverables.
+**Current status (2026-10-19):** GitHub **PUBLIC**; Streamlit Community Cloud + Render Free FastAPI + Neon PostgreSQL support **anonymous movie/review creation, actual AI inference, review deletion and movie deletion** under the owner-enabled `public_demo` policy. The recorded single-session public E2E passed **30/30 checks** with no reported errors; the original **30 movies / 360 synthetic KoELECTRA-scored reviews** had matching before/after SHA-256 hashes. Render reported app **0.4.0**, revision `0310471`, and database/model ready. The gallery, separate review-view/write screens, page-local filters and recent reviews loaded **20 at a time** remain available.
 
-**Reviewer quickstart:** [Current deployment and reproduction](docs/GRADER_GUIDE_20261018.md) · [G8 30-film final acceptance](docs/G8_DEMO30_FINAL_ACCEPTANCE_20261018.md) · [Historical G7 acceptance](docs/G7_PUBLIC_CLOUD_ACCEPTANCE_20261018.md).
+**Local artifact verification: `FINAL_PACKAGE_VERIFIED`.** The final ZIP contains **138 files**, including the corrected **36-page PDF / 32 image placements** and **37 screenshot originals**. Archive CRC, per-file manifest hashes and equality of the archived and standalone PDFs passed; **63 source/configuration files match the recorded originals**. The resumed local source run passed **205 tests + 3 subtests**, with **1 warning**, in **6.58 seconds**. The earlier original-environment record remains **202 tests + 3 subtests**, and the recorded lean packaged-source run remains **110 tests, 3 skipped + 3 subtests** with model assets excluded. Submission identity: **미션18_2팀_이형기**. GitHub-hosted Actions were **not run**.
+
+**Publication status:** The PDF and ZIP are locally built and verified; the public release update is **awaiting approval**. [기존 릴리스(최종 첨부 갱신 승인 대기)](https://github.com/exobiz7/mission18-movie-review-intelligence/releases/tag/m18-public-grading-final-20261019).
+
+**Screenshot correction completed:** Visual review found stale film content in the original PDF's page 16 and incomplete supplemental full-review images. The separate **GET-only** run `corrected_film_capture_r2c` passed **5/5 checks** at **08:57–08:58 UTC**: 19 GET requests, all 12 review IDs/texts and film metadata matched for movies 4/5/9, six new PNGs, and unchanged 30/360 baseline hashes. The original **30/30 E2E record**, including movie 34/review 364 creation, inference and deletion, is preserved separately; the five follow-up checks are not added to that total. Independent visual review of **all six corrected PNGs and the R2 PDF is complete**. Only PDF pages **16 and 18** changed; the other **34 pages are pixel-identical** to the reviewed original. See the [acceptance and correction record](docs/PUBLIC_GRADING_ACCEPTANCE_20261019.md#22-후속-get-only-재캡처-결과).
+
+**Reviewer quickstart:** [Current public grading and reproduction](docs/GRADER_GUIDE_20261019.md) · [2026-10-19 public grading acceptance and delivery status](docs/PUBLIC_GRADING_ACCEPTANCE_20261019.md) · [Historical G8 30-film acceptance](docs/G8_DEMO30_FINAL_ACCEPTANCE_20261018.md).
 
 **Service links:** [Streamlit frontend](https://mission18-movie-review-intelligence-irdbhh5ksnbzv4ag4varjr.streamlit.app/) · [FastAPI Swagger /docs](https://m18-movie-review-api.onrender.com/docs) · [API readiness](https://m18-movie-review-api.onrender.com/readiness).
 
-**Evidence note:** Sections explicitly dated 2026-10-10 through 2026-10-13 below preserve the historical state at those milestones. Their "not yet deployed", "private GitHub" and "empty DB" statements must not be read as the current state.
+**Evidence note:** The G1–G8 milestone sections and documents dated through 2026-10-18 preserve their historical evidence. Their "not yet deployed", "private GitHub", "empty DB", "read-only public demo" and older test totals describe those snapshots. The linked **2026-10-19 acceptance** governs current public grading behavior. The 30/360 baseline is a verified snapshot; shared demo counts can change when visitors add or delete records. AI positivity is a model probability aggregate, **not a viewer star rating**.
 
 Developer machine-specific checkout used in historical runs: `/Volumes/SSD 4T/z_ai_asset/M18_fastapi_review`. For external reviewers, clone the public repository to any local directory and follow the **Reviewer quickstart** above.
 
@@ -54,9 +60,16 @@ git status --short --branch
 
 **Do not copy M13 model checkpoints or M17 direct-storage code into the M18 frontend.** The backend owns DB and inference; reuse patterns after license/contract verification.
 
-## Next gate
+## Verified final package
 
-**Final G8:** Submit under `미션18/미션18_2팀_이형기/` with source code, real 30-film/360-review Cloud evidence (8 screenshots, anonymous E2E 29/29), 13 Swagger captures, provenance catalog, ERD and PDF report. Old G7 screenshots are historical. **No GitHub Actions or paid CI required.**
+**Final public-grading package: `FINAL_PACKAGE_VERIFIED`.** The final ZIP, standalone PDF and `SHA256SUMS.txt` have been built and verified locally. The ZIP root is `미션18/미션18_2팀_이형기/`; its **138 files**, CRC, manifest hashes and standalone-PDF match were verified. The local release recheck passed **16/16 gates (`LOCAL_VERIFIED`)**. The [기존 릴리스(최종 첨부 갱신 승인 대기)](https://github.com/exobiz7/mission18-movie-review-intelligence/releases/tag/m18-public-grading-final-20261019) still has its earlier content; updating its attachments, title and description awaits approval.
+
+| Artifact | Bytes | SHA-256 |
+|---|---:|---|
+| `미션18_2팀_이형기.zip` | 13,422,213 | `5ae5250224c72de57242a3fa484a38faaa8250d3f8a63efa4c86a7af8669a7f6` |
+| `미션18_2팀_이형기_최종보고서.pdf` | 5,188,411 | `1eb382fd831fb11dbabcced02193be9edde2f96517e02c0c8dd42d1eb5aa4052` |
+
+The verified application source is `27569ed763b5af61288aa4c1061ea4a1a9b3a0d2`; the observed Render revision is `0310471`. Subsequent documentation and packaging-helper changes are recorded separately from that runtime source. The original **30/30 public E2E**, the **5/5 GET-only correction** and the 30-film/360-review baseline remain distinct evidence. Earlier reports and evidence are preserved, and **63 source/configuration files in the R2 submission match the recorded originals byte-for-byte**. Full paths, verification scope and the read-only packaging-helper command are in the [acceptance record](docs/PUBLIC_GRADING_ACCEPTANCE_20261019.md) and [grader guide](docs/GRADER_GUIDE_20261019.md). Earlier 29/29 and 37/37 read-only evidence remains historical. **No GitHub Actions or paid CI was used for this delivery.**
 
 ## G1 local checks
 
