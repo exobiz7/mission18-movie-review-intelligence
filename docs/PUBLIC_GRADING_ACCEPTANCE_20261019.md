@@ -116,7 +116,9 @@
 
 **로컬 제작·검수 상태는 `FINAL_PACKAGE_VERIFIED`입니다.** ZIP 내부 루트는 `미션18/미션18_2팀_이형기/`이며 소스, 채점 안내, 설계·ERD·출처, R2 PDF, 화면 원본, 실행 근거 및 체크섬을 포함한 **138개 파일**을 검증했습니다. CRC, 파일별 manifest와 SHA-256, ZIP 안의 PDF와 별도 PDF 파일의 동일성 검사를 통과했습니다. R2 제출물의 **소스·구성 파일 63개가 기록된 원본과 바이트 단위로 동일**함을 확인했습니다. 이전 PDF·ZIP과 보정 전 화면·핵심 CRUD 기록은 별도로 그대로 보존합니다.
 
-PDF·ZIP은 로컬 제작·검수를 완료했으며, 공개 릴리스 업데이트는 **승인 대기**입니다. [기존 릴리스(최종 첨부 갱신 승인 대기)](https://github.com/exobiz7/mission18-movie-review-intelligence/releases/tag/m18-public-grading-final-20261019)는 기존 내용을 유지하고 있으며 최종 첨부·제목·본문을 아직 갱신하지 않았습니다.
+PDF·ZIP과 `SHA256SUMS.txt`를 [최종 릴리스](https://github.com/exobiz7/mission18-movie-review-intelligence/releases/tag/m18-public-grading-final-20261019)에 공개 업로드했으며, 릴리스 제목·본문도 검증된 R2 제출물 기준으로 갱신했습니다. 공개된 파일은 아래의 확정된 크기·SHA-256으로 식별합니다.
+
+GitHub가 업로드 시 한글 파일명을 변환하여, 공개 다운로드에는 `M18_Public_Grading_Final_R2.zip`과 `M18_Public_Grading_Final_Report_R2.pdf`를 사용하고 한글 제출명을 표시 라벨로 제공합니다. 아래 한글 파일명으로 식별한 최종본과 공개 첨부는 바이트 단위로 동일합니다. `SHA256SUMS.txt`는 원래 한글 제출명을 기준으로 하므로, 파일명 기준 검증 시 다운로드 파일명을 아래 표에 맞춥니다.
 
 | 최종 파일 | 크기 (bytes) | SHA-256 |
 |---|---:|---|

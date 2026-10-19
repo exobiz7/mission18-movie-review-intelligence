@@ -4,7 +4,7 @@
 
 **Local artifact verification: `FINAL_PACKAGE_VERIFIED`.** The final ZIP contains **138 files**, including the corrected **36-page PDF / 32 image placements** and **37 screenshot originals**. Archive CRC, per-file manifest hashes and equality of the archived and standalone PDFs passed; **63 source/configuration files match the recorded originals**. The resumed local source run passed **205 tests + 3 subtests**, with **1 warning**, in **6.58 seconds**. The earlier original-environment record remains **202 tests + 3 subtests**, and the recorded lean packaged-source run remains **110 tests, 3 skipped + 3 subtests** with model assets excluded. Submission identity: **미션18_2팀_이형기**. GitHub-hosted Actions were **not run**.
 
-**Publication status:** The PDF and ZIP are locally built and verified; the public release update is **awaiting approval**. [기존 릴리스(최종 첨부 갱신 승인 대기)](https://github.com/exobiz7/mission18-movie-review-intelligence/releases/tag/m18-public-grading-final-20261019).
+**Publication status:** The verified ZIP, standalone PDF and `SHA256SUMS.txt` are available in the [final release](https://github.com/exobiz7/mission18-movie-review-intelligence/releases/tag/m18-public-grading-final-20261019). Its title and description have been updated for the verified R2 package.
 
 **Screenshot correction completed:** Visual review found stale film content in the original PDF's page 16 and incomplete supplemental full-review images. The separate **GET-only** run `corrected_film_capture_r2c` passed **5/5 checks** at **08:57–08:58 UTC**: 19 GET requests, all 12 review IDs/texts and film metadata matched for movies 4/5/9, six new PNGs, and unchanged 30/360 baseline hashes. The original **30/30 E2E record**, including movie 34/review 364 creation, inference and deletion, is preserved separately; the five follow-up checks are not added to that total. Independent visual review of **all six corrected PNGs and the R2 PDF is complete**. Only PDF pages **16 and 18** changed; the other **34 pages are pixel-identical** to the reviewed original. See the [acceptance and correction record](docs/PUBLIC_GRADING_ACCEPTANCE_20261019.md#22-후속-get-only-재캡처-결과).
 
@@ -62,7 +62,7 @@ git status --short --branch
 
 ## Verified final package
 
-**Final public-grading package: `FINAL_PACKAGE_VERIFIED`.** The final ZIP, standalone PDF and `SHA256SUMS.txt` have been built and verified locally. The ZIP root is `미션18/미션18_2팀_이형기/`; its **138 files**, CRC, manifest hashes and standalone-PDF match were verified. The local release recheck passed **16/16 gates (`LOCAL_VERIFIED`)**. The [기존 릴리스(최종 첨부 갱신 승인 대기)](https://github.com/exobiz7/mission18-movie-review-intelligence/releases/tag/m18-public-grading-final-20261019) still has its earlier content; updating its attachments, title and description awaits approval.
+**Final public-grading package: `FINAL_PACKAGE_VERIFIED`.** The final ZIP, standalone PDF and `SHA256SUMS.txt` have been built and verified locally. The ZIP root is `미션18/미션18_2팀_이형기/`; its **138 files**, CRC, manifest hashes and standalone-PDF match were verified. The local release recheck passed **16/16 gates (`LOCAL_VERIFIED`)**. The verified ZIP, standalone PDF and `SHA256SUMS.txt` are published in the [final release](https://github.com/exobiz7/mission18-movie-review-intelligence/releases/tag/m18-public-grading-final-20261019), with its title and description updated for the verified R2 package.
 
 | Artifact | Bytes | SHA-256 |
 |---|---:|---|

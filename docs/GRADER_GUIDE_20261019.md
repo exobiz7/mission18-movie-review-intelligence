@@ -12,7 +12,7 @@
 | API 명세·직접 확인 | [FastAPI Swagger `/docs`](https://m18-movie-review-api.onrender.com/docs), 13개 operation |
 | 백엔드 준비 상태 | [`/readiness`](https://m18-movie-review-api.onrender.com/readiness), DB 및 실제 모델 준비 상태 |
 | 공개 소스 | [GitHub repository](https://github.com/exobiz7/mission18-movie-review-intelligence) |
-| 기존 공개 릴리스 | [기존 릴리스(최종 첨부 갱신 승인 대기)](https://github.com/exobiz7/mission18-movie-review-intelligence/releases/tag/m18-public-grading-final-20261019) |
+| 최종 제출물 다운로드 | [최종 릴리스 · ZIP·PDF·체크섬](https://github.com/exobiz7/mission18-movie-review-intelligence/releases/tag/m18-public-grading-final-20261019) |
 
 Render Free 서버가 휴면 상태였다면 첫 연결에 시간이 필요할 수 있습니다. 프론트의 연결 상태 안내를 확인한 뒤 진행합니다. 수용 실행에서 백엔드는 app `0.4.0`, Render revision `0310471`, `public_demo`, DB/model ready를 보고했습니다. 이 값은 기록된 시점의 관측이며 Streamlit의 배포 SHA를 뜻하지 않습니다.
 
@@ -92,7 +92,9 @@ uv sync --locked --group dev
 | `미션18_2팀_이형기.zip` | 13,422,213 |
 | `미션18_2팀_이형기_최종보고서.pdf` | 5,188,411 |
 
-원본 Mac 프로젝트의 출력 위치는 `.local/submissions_final/미션18_PUBLIC_20261019_R2/`이며, `SHA256SUMS.txt`에 ZIP·PDF 체크섬을 함께 제공합니다. [확정된 SHA-256 목록](PUBLIC_GRADING_ACCEPTANCE_20261019.md#6-검증된-최종-제출물과-인계)은 제작·검수된 로컬 산출물의 값입니다. [기존 릴리스(최종 첨부 갱신 승인 대기)](https://github.com/exobiz7/mission18-movie-review-intelligence/releases/tag/m18-public-grading-final-20261019)는 기존 내용을 유지하고 있으며, 최종 PDF·ZIP의 공개 업로드 완료를 의미하지 않습니다.
+원본 Mac 프로젝트의 출력 위치는 `.local/submissions_final/미션18_PUBLIC_20261019_R2/`이며, `SHA256SUMS.txt`에 ZIP·PDF 체크섬을 함께 제공합니다. 최종 ZIP·PDF·체크섬은 [최종 릴리스](https://github.com/exobiz7/mission18-movie-review-intelligence/releases/tag/m18-public-grading-final-20261019)에서 다운로드할 수 있습니다. 공개 첨부 파일의 해시는 [확정된 SHA-256 목록](PUBLIC_GRADING_ACCEPTANCE_20261019.md#6-검증된-최종-제출물과-인계)과 대조할 수 있습니다.
+
+GitHub 공개 다운로드 파일명은 `M18_Public_Grading_Final_R2.zip`과 `M18_Public_Grading_Final_Report_R2.pdf`이며, 릴리스에는 원래 한글 제출명을 표시 라벨로 함께 제공합니다. 파일 내용과 ZIP 내부 한글 경로는 최종본과 동일합니다. `SHA256SUMS.txt`를 파일명 기준으로 검증하려면 다운로드 파일을 각각 `미션18_2팀_이형기.zip`, `미션18_2팀_이형기_최종보고서.pdf`로 이름을 맞춥니다.
 
 1. [공개 채점 수용 기록과 최종 제출 검수](PUBLIC_GRADING_ACCEPTANCE_20261019.md)
 2. [API 계약](API_CONTRACT.md), [ERD](ERD.md), [감성분석 계약](SENTIMENT_CONTRACT.md)
@@ -101,4 +103,4 @@ uv sync --locked --group dev
 
 2026-10-18의 29/29·37/37 문서와 PDF·ZIP은 이전 읽기 전용 검증의 역사적 자료로 보존합니다. 현재 공개 기능의 판정에는 이 안내와 2026-10-19 수용 기록을 사용합니다.
 
-**PDF·ZIP은 로컬 제작·검수를 완료했으며, 공개 릴리스 업데이트는 승인 대기입니다.**
+**PDF·ZIP 제작·검수와 최종 파일의 공개 릴리스 업로드, 제목·본문 갱신을 완료했습니다.**
